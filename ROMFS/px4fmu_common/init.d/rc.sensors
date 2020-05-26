@@ -105,7 +105,7 @@ then
 	ist8310 -X start
 	lis2mdl -X start
 	lis3mdl -X start
-	qmc5883 -X start
+	qmc5883l -X start
 	rm3100 -X start
 
 	# differential pressure sensors
