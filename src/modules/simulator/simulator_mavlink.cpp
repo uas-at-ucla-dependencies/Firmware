@@ -238,7 +238,15 @@ void Simulator::update_sensors(const hrt_abstime &time, const mavlink_hil_sensor
 
 	// magnetometer
 	if ((sensors.fields_updated & SensorSource::MAG) == SensorSource::MAG && !_mag_blocked) {
-		_px4_mag.update(time, sensors.xmag, sensors.ymag, sensors.zmag);
+		if (_mag_stuck) {
+			_px4_mag.update(time, _last_magx, _last_magy, _last_magz);
+
+		} else {
+			_px4_mag.update(time, sensors.xmag, sensors.ymag, sensors.zmag);
+			_last_magx = sensors.xmag;
+			_last_magy = sensors.ymag;
+			_last_magz = sensors.zmag;
+		}
 	}
 
 	// baro
@@ -976,6 +984,11 @@ void Simulator::check_failure_injections()
 			if (failure_type == vehicle_command_s::FAILURE_TYPE_OFF) {
 				supported = true;
 				_mag_blocked = true;
+
+			} else if (failure_type == vehicle_command_s::FAILURE_TYPE_STUCK) {
+				supported = true;
+				_mag_stuck = true;
+				_mag_blocked = false;
 
 			} else if (failure_type == vehicle_command_s::FAILURE_TYPE_OK) {
 				supported = true;
