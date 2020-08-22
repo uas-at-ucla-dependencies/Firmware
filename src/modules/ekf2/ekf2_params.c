@@ -821,17 +821,12 @@ PARAM_DEFINE_FLOAT(EKF2_TERR_NOISE, 5.0f);
 PARAM_DEFINE_FLOAT(EKF2_TERR_GRAD, 0.5f);
 
 /**
- * Device id of IMU
- *
- * Set to 0 to use system selected (sensor_combined) IMU,
- * otherwise set to the device id of the desired IMU (vehicle_imu).
+ * EKF2 multi-instance mode
  *
  * @group EKF2
- * @value 0 System Primary
- * @category Developer
- *
+ * @boolean
  */
-PARAM_DEFINE_INT32(EKF2_IMU_ID, 0);
+PARAM_DEFINE_INT32(EKF2_MULTI_MODE, 1);
 
 /**
  * X position of IMU in body frame (forward axis with origin relative to vehicle centre of gravity)

@@ -167,12 +167,14 @@ private:
 	uORB::Publication<sensor_selection_s> _sensor_selection_pub{ORB_ID(sensor_selection)};	/**< handle to the sensor selection uORB topic */
 	uORB::PublicationQueued<subsystem_info_s> _info_pub{ORB_ID(subsystem_info)};	/* subsystem info publication */
 
-	uORB::SubscriptionCallbackWorkItem(&_vehicle_imu_sub)[3];
-	uORB::Subscription _vehicle_imu_status_sub[ACCEL_COUNT_MAX] {
+	uORB::SubscriptionCallbackWorkItem(&_vehicle_imu_sub)[SENSOR_COUNT_MAX];
+	uORB::Subscription _vehicle_imu_status_sub[SENSOR_COUNT_MAX] {
 		{ORB_ID(vehicle_imu_status), 0},
 		{ORB_ID(vehicle_imu_status), 1},
 		{ORB_ID(vehicle_imu_status), 2},
 	};
+
+	uORB::Subscription _sensor_selection_sub{ORB_ID(sensor_selection)};
 
 	sensor_combined_s _last_sensor_data[SENSOR_COUNT_MAX] {};	/**< latest sensor data from all sensors instances */
 
@@ -190,6 +192,10 @@ private:
 
 	sensor_selection_s _selection {};		/**< struct containing the sensor selection to be published to the uORB */
 	subsystem_info_s _info {};			/**< subsystem info publication */
+
+	DEFINE_PARAMETERS(
+		(ParamInt<px4::params::SENS_IMU_MODE>) _param_sens_imu_mode
+	)
 };
 
 } /* namespace sensors */

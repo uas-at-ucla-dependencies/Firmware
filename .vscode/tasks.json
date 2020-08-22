@@ -101,7 +101,7 @@
                     "PX4_SIM_SPEED_FACTOR": "1"
                 }
             },
-            "command": "gzserver --verbose ${workspaceRoot}/Tools/sitl_gazebo/worlds/iris.world",
+            "command": "gzserver --verbose ${workspaceRoot}/Tools/sitl_gazebo/worlds/empty.world",
             "isBackground": true,
             "presentation": {
                 "echo": true,

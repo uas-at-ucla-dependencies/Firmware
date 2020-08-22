@@ -61,7 +61,9 @@ set(msg_files
 	esc_report.msg
 	esc_status.msg
 	estimator_innovations.msg
+	estimator_selector_status.msg
 	estimator_sensor_bias.msg
+	estimator_states.msg
 	estimator_status.msg
 	follow_target.msg
 	geofence_result.msg

@@ -68,7 +68,8 @@ bool VehicleAngularVelocity::Start()
 	}
 
 	if (!SensorSelectionUpdate(true)) {
-		ScheduleDelayed(10_ms);
+		_selected_sensor_sub_index = 0;
+		_sensor_sub.registerCallback();
 	}
 
 	return true;
@@ -77,10 +78,7 @@ bool VehicleAngularVelocity::Start()
 void VehicleAngularVelocity::Stop()
 {
 	// clear all registered callbacks
-	for (auto &sub : _sensor_sub) {
-		sub.unregisterCallback();
-	}
-
+	_sensor_sub.unregisterCallback();
 	_sensor_selection_sub.unregisterCallback();
 
 	Deinit();
@@ -110,11 +108,11 @@ void VehicleAngularVelocity::CheckFilters()
 					const uint8_t samples = math::constrain(roundf(configured_interval_us / sample_interval_avg), 1.f,
 										(float)sensor_gyro_s::ORB_QUEUE_LENGTH);
 
-					_sensor_sub[_selected_sensor_sub_index].set_required_updates(samples);
+					_sensor_sub.set_required_updates(samples);
 					_required_sample_updates = samples;
 
 				} else {
-					_sensor_sub[_selected_sensor_sub_index].set_required_updates(1);
+					_sensor_sub.set_required_updates(1);
 					_required_sample_updates = 1;
 				}
 			}
@@ -160,15 +158,15 @@ void VehicleAngularVelocity::CheckFilters()
 
 void VehicleAngularVelocity::SensorBiasUpdate(bool force)
 {
-	if (_estimator_sensor_bias_sub.updated() || force) {
-		estimator_sensor_bias_s bias;
+	for (int i = 0; i < ORB_MULTI_MAX_INSTANCES; i++) {
+		if (_estimator_sensor_bias_sub[i].updated() || force) {
+			estimator_sensor_bias_s bias;
 
-		if (_estimator_sensor_bias_sub.copy(&bias)) {
-			if (bias.gyro_device_id == _selected_sensor_device_id) {
-				_bias = Vector3f{bias.gyro_bias};
-
-			} else {
-				_bias.zero();
+			if (_estimator_sensor_bias_sub[i].copy(&bias)) {
+				if (bias.gyro_device_id == _selected_sensor_device_id) {
+					_bias = Vector3f{bias.gyro_bias};
+					return;
+				}
 			}
 		}
 	}
@@ -181,17 +179,13 @@ bool VehicleAngularVelocity::SensorSelectionUpdate(bool force)
 		_sensor_selection_sub.copy(&sensor_selection);
 
 		if (_selected_sensor_device_id != sensor_selection.gyro_device_id) {
-			// clear all registered callbacks
-			for (auto &sub : _sensor_sub) {
-				sub.unregisterCallback();
-			}
+			for (uint8_t i = 0; i < MAX_SENSOR_COUNT; i++) {
+				uORB::SubscriptionData<sensor_gyro_s> sensor_gyro_sub{ORB_ID(sensor_gyro), i};
 
-			for (int i = 0; i < MAX_SENSOR_COUNT; i++) {
-				sensor_gyro_s report{};
-				_sensor_sub[i].copy(&report);
+				if ((sensor_gyro_sub.get().device_id != 0) && (sensor_gyro_sub.get().device_id == sensor_selection.gyro_device_id)) {
+					_sensor_sub.ChangeInstance(i);
 
-				if ((report.device_id != 0) && (report.device_id == sensor_selection.gyro_device_id)) {
-					if (_sensor_sub[i].registerCallback()) {
+					if (_sensor_sub.registerCallback()) {
 						PX4_DEBUG("selected sensor changed %d -> %d", _selected_sensor_sub_index, i);
 
 						// record selected sensor (array index)
@@ -201,7 +195,7 @@ bool VehicleAngularVelocity::SensorSelectionUpdate(bool force)
 						// clear bias and corrections
 						_bias.zero();
 
-						_calibration.set_device_id(report.device_id);
+						_calibration.set_device_id(sensor_gyro_sub.get().device_id);
 
 						// reset sample interval accumulator on sensor change
 						_timestamp_sample_last = 0;
@@ -247,7 +241,7 @@ void VehicleAngularVelocity::Run()
 	SensorBiasUpdate(selection_updated);
 	ParametersUpdate();
 
-	bool sensor_updated = _sensor_sub[_selected_sensor_sub_index].updated();
+	bool sensor_updated = _sensor_sub.updated();
 
 	// process all outstanding messages
 	while (sensor_updated || selection_updated) {
@@ -255,7 +249,7 @@ void VehicleAngularVelocity::Run()
 
 		sensor_gyro_s sensor_data;
 
-		if (_sensor_sub[_selected_sensor_sub_index].copy(&sensor_data)) {
+		if (_sensor_sub.copy(&sensor_data)) {
 
 			if (sensor_updated) {
 				// collect sample interval average for filters
@@ -298,7 +292,7 @@ void VehicleAngularVelocity::Run()
 			CheckFilters();
 
 			// publish once all new samples are processed
-			sensor_updated = _sensor_sub[_selected_sensor_sub_index].updated();
+			sensor_updated = _sensor_sub.updated();
 
 			if (!sensor_updated) {
 				bool publish = true;

@@ -93,3 +93,15 @@ PARAM_DEFINE_INT32(CAL_MAG_ROT_AUTO, 1);
  *
  */
 PARAM_DEFINE_FLOAT(SENS_MAG_RATE, 50.0f);
+
+/**
+ * Sensors hub mag mode
+ *
+ * @value 0 Publish only highest priority
+ * @value 1 Publish all magnetometers
+ *
+ * @category system
+ * @reboot_required true
+ * @group Sensors
+ */
+PARAM_DEFINE_INT32(SENS_MAG_MODE, 0);

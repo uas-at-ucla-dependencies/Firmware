@@ -34,6 +34,16 @@
 add_subdirectory(Utility)
 
 px4_add_module(
+	MODULE modules__ekf2_selector
+	MAIN ekf2_selector
+	SRCS
+		EKF2Selector.cpp
+		EKF2Selector.hpp
+	DEPENDS
+		px4_work_queue
+	)
+
+px4_add_module(
 	MODULE modules__ekf2
 	MAIN ekf2
 	COMPILE_FLAGS
@@ -46,4 +56,5 @@ px4_add_module(
 		ecl_geo
 		perf
 		Ekf2Utility
+		px4_work_queue
 	)

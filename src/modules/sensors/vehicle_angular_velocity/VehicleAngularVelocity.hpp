@@ -80,15 +80,17 @@ private:
 	uORB::Publication<vehicle_angular_acceleration_s> _vehicle_angular_acceleration_pub{ORB_ID(vehicle_angular_acceleration)};
 	uORB::Publication<vehicle_angular_velocity_s> _vehicle_angular_velocity_pub{ORB_ID(vehicle_angular_velocity)};
 
-	uORB::Subscription _estimator_sensor_bias_sub{ORB_ID(estimator_sensor_bias)};
+	uORB::Subscription _estimator_sensor_bias_sub[ORB_MULTI_MAX_INSTANCES] {
+		{ORB_ID(estimator_sensor_bias), 0},
+		{ORB_ID(estimator_sensor_bias), 1},
+		{ORB_ID(estimator_sensor_bias), 2},
+		{ORB_ID(estimator_sensor_bias), 3},
+	};
+
 	uORB::Subscription _params_sub{ORB_ID(parameter_update)};
 
 	uORB::SubscriptionCallbackWorkItem _sensor_selection_sub{this, ORB_ID(sensor_selection)};
-	uORB::SubscriptionCallbackWorkItem _sensor_sub[MAX_SENSOR_COUNT] {
-		{this, ORB_ID(sensor_gyro), 0},
-		{this, ORB_ID(sensor_gyro), 1},
-		{this, ORB_ID(sensor_gyro), 2}
-	};
+	uORB::SubscriptionCallbackWorkItem _sensor_sub{this, ORB_ID(sensor_gyro)};
 
 	calibration::Gyroscope _calibration{};
 

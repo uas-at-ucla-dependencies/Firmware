@@ -901,7 +901,7 @@ public:
 private:
 	uORB::Subscription _vehicle_imu_sub[ORB_MULTI_MAX_INSTANCES] {{ORB_ID(vehicle_imu), 0}, {ORB_ID(vehicle_imu), 1}, {ORB_ID(vehicle_imu), 2}, {ORB_ID(vehicle_imu), 3}};
 	uORB::Subscription _sensor_selection_sub{ORB_ID(sensor_selection)};
-	uORB::Subscription _bias_sub{ORB_ID(estimator_sensor_bias)};
+	uORB::Subscription _estimator_sensor_bias_sub[ORB_MULTI_MAX_INSTANCES] {{ORB_ID(estimator_sensor_bias), 0}, {ORB_ID(estimator_sensor_bias), 1}, {ORB_ID(estimator_sensor_bias), 2}, {ORB_ID(estimator_sensor_bias), 3}};
 	uORB::Subscription _differential_pressure_sub{ORB_ID(differential_pressure)};
 	uORB::Subscription _magnetometer_sub{ORB_ID(vehicle_magnetometer)};
 	uORB::Subscription _air_data_sub{ORB_ID(vehicle_air_data)};
@@ -948,6 +948,32 @@ protected:
 				_magnetometer_sub.copy(&magnetometer);
 			}
 
+
+			// find corresponding estimated sensor bias
+			Vector3f accel_bias{0.f, 0.f, 0.f};
+			Vector3f gyro_bias{0.f, 0.f, 0.f};
+			Vector3f mag_bias{0.f, 0.f, 0.f};
+
+			for (auto &bias_sub : _estimator_sensor_bias_sub) {
+				estimator_sensor_bias_s bias;
+
+				if (bias_sub.copy(&bias)) {
+					if ((bias.accel_device_id != 0) && (bias.accel_device_id == imu.accel_device_id)) {
+						accel_bias = Vector3f{bias.accel_bias};
+					}
+
+					if ((bias.gyro_device_id != 0) && (bias.gyro_device_id == imu.gyro_device_id)) {
+						gyro_bias = Vector3f{bias.gyro_bias};
+					}
+
+					if ((bias.mag_device_id != 0) && (bias.mag_device_id == magnetometer.device_id)) {
+						mag_bias = Vector3f{bias.mag_bias};
+					}
+				}
+			}
+
+			const Vector3f mag = Vector3f{magnetometer.magnetometer_ga} - mag_bias;
+
 			vehicle_air_data_s air_data{};
 
 			if (_air_data_sub.update(&air_data)) {
@@ -968,14 +994,11 @@ protected:
 				_differential_pressure_sub.copy(&differential_pressure);
 			}
 
-			estimator_sensor_bias_s bias{};
-			_bias_sub.copy(&bias);
-
 			const float accel_dt_inv = 1.e6f / (float)imu.delta_velocity_dt;
-			Vector3f accel = (Vector3f{imu.delta_velocity} * accel_dt_inv) - Vector3f{bias.accel_bias};
+			const Vector3f accel = (Vector3f{imu.delta_velocity} * accel_dt_inv) - accel_bias;
 
 			const float gyro_dt_inv = 1.e6f / (float)imu.delta_angle_dt;
-			Vector3f gyro = (Vector3f{imu.delta_angle} * gyro_dt_inv) - Vector3f{bias.gyro_bias};
+			const Vector3f gyro = (Vector3f{imu.delta_angle} * gyro_dt_inv) - gyro_bias;
 
 			mavlink_highres_imu_t msg{};
 
@@ -986,9 +1009,9 @@ protected:
 			msg.xgyro = gyro(0);
 			msg.ygyro = gyro(1);
 			msg.zgyro = gyro(2);
-			msg.xmag = magnetometer.magnetometer_ga[0] - bias.mag_bias[0];
-			msg.ymag = magnetometer.magnetometer_ga[1] - bias.mag_bias[1];
-			msg.zmag = magnetometer.magnetometer_ga[2] - bias.mag_bias[2];
+			msg.xmag = mag(0);
+			msg.ymag = mag(1);
+			msg.zmag = mag(2);
 			msg.abs_pressure = air_data.baro_pressure_pa;
 			msg.diff_pressure = differential_pressure.differential_pressure_raw_pa;
 			msg.pressure_alt = air_data.baro_alt_meter;
