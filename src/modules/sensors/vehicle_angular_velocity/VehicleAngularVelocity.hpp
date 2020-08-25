@@ -75,7 +75,7 @@ private:
 	void SensorBiasUpdate(bool force = false);
 	bool SensorSelectionUpdate(bool force = false);
 
-	static constexpr int MAX_SENSOR_COUNT = 3;
+	static constexpr int MAX_SENSOR_COUNT = 4;
 
 	uORB::Publication<vehicle_angular_acceleration_s> _vehicle_angular_acceleration_pub{ORB_ID(vehicle_angular_acceleration)};
 	uORB::Publication<vehicle_angular_velocity_s> _vehicle_angular_velocity_pub{ORB_ID(vehicle_angular_velocity)};
@@ -87,7 +87,8 @@ private:
 	uORB::SubscriptionCallbackWorkItem _sensor_sub[MAX_SENSOR_COUNT] {
 		{this, ORB_ID(sensor_gyro), 0},
 		{this, ORB_ID(sensor_gyro), 1},
-		{this, ORB_ID(sensor_gyro), 2}
+		{this, ORB_ID(sensor_gyro), 2},
+		{this, ORB_ID(sensor_gyro), 3},
 	};
 
 	calibration::Gyroscope _calibration{};

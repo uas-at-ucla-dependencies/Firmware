@@ -73,7 +73,7 @@ private:
 	void SensorBiasUpdate(bool force = false);
 	bool SensorSelectionUpdate(bool force = false);
 
-	static constexpr int MAX_SENSOR_COUNT = 3;
+	static constexpr int MAX_SENSOR_COUNT = 4;
 
 	uORB::Publication<vehicle_acceleration_s> _vehicle_acceleration_pub{ORB_ID(vehicle_acceleration)};
 
@@ -84,7 +84,8 @@ private:
 	uORB::SubscriptionCallbackWorkItem _sensor_sub[MAX_SENSOR_COUNT] {
 		{this, ORB_ID(sensor_accel), 0},
 		{this, ORB_ID(sensor_accel), 1},
-		{this, ORB_ID(sensor_accel), 2}
+		{this, ORB_ID(sensor_accel), 2},
+		{this, ORB_ID(sensor_accel), 3}
 	};
 
 	calibration::Accelerometer _calibration{};

@@ -89,6 +89,9 @@ void Accelerometer::SensorCorrectionsUpdate(bool force)
 					case 2:
 						_thermal_offset = Vector3f{corrections.accel_offset_2};
 						return;
+					case 3:
+						_thermal_offset = Vector3f{corrections.accel_offset_2};
+						return;
 					}
 				}
 			}

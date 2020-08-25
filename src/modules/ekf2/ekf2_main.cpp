@@ -245,11 +245,12 @@ private:
 	uORB::Subscription _vehicle_land_detected_sub{ORB_ID(vehicle_land_detected)};
 
 	uORB::SubscriptionCallbackWorkItem _sensor_combined_sub{this, ORB_ID(sensor_combined)};
-	static constexpr int MAX_SENSOR_COUNT = 3;
+	static constexpr int MAX_SENSOR_COUNT = 4;
 	uORB::SubscriptionCallbackWorkItem _vehicle_imu_subs[MAX_SENSOR_COUNT] {
 		{this, ORB_ID(vehicle_imu), 0},
 		{this, ORB_ID(vehicle_imu), 1},
-		{this, ORB_ID(vehicle_imu), 2}
+		{this, ORB_ID(vehicle_imu), 2},
+		{this, ORB_ID(vehicle_imu), 3},
 	};
 	int _imu_sub_index{-1};
 	bool _callback_registered{false};

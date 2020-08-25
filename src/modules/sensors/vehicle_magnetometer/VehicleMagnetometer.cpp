@@ -52,7 +52,7 @@ VehicleMagnetometer::VehicleMagnetometer() :
 {
 	char str[20] {};
 
-	for (int mag_index = 0; mag_index < 4; mag_index++) {
+	for (int mag_index = 0; mag_index < MAX_SENSOR_COUNT; mag_index++) {
 		// CAL_MAGx_ID
 		sprintf(str, "CAL_%s%u_ID", "MAG", mag_index);
 		param_find(str);

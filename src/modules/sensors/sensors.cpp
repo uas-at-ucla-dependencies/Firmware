@@ -117,10 +117,11 @@ private:
 	sensor_combined_s _sensor_combined{};
 	sensor_preflight_imu_s _sensor_preflight_imu{};
 
-	uORB::SubscriptionCallbackWorkItem _vehicle_imu_sub[3] {
+	uORB::SubscriptionCallbackWorkItem _vehicle_imu_sub[4] {
 		{this, ORB_ID(vehicle_imu), 0},
 		{this, ORB_ID(vehicle_imu), 1},
-		{this, ORB_ID(vehicle_imu), 2}
+		{this, ORB_ID(vehicle_imu), 2},
+		{this, ORB_ID(vehicle_imu), 3}
 	};
 
 	uORB::Subscription _diff_pres_sub{ORB_ID(differential_pressure)};
@@ -175,7 +176,7 @@ private:
 	VehicleAirData          *_vehicle_air_data{nullptr};
 	VehicleMagnetometer     *_vehicle_magnetometer{nullptr};
 
-	static constexpr int MAX_SENSOR_COUNT = 3;
+	static constexpr int MAX_SENSOR_COUNT = 4;
 	VehicleIMU      *_vehicle_imu_list[MAX_SENSOR_COUNT] {};
 
 

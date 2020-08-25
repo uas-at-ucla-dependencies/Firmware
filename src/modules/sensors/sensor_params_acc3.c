@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2017-2020 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2012-2020 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,10 +32,72 @@
  ****************************************************************************/
 
 /**
- * Thermal compensation for barometric pressure sensors.
+ * ID of the Accelerometer that the calibration is for.
  *
- * @group Thermal Compensation
- * @reboot_required true
- * @boolean
+ * @category system
+ * @group Sensor Calibration
  */
-PARAM_DEFINE_INT32(TC_B_ENABLE, 0);
+PARAM_DEFINE_INT32(CAL_ACC3_ID, 0);
+
+/**
+ * Accelerometer 3 priority.
+ *
+ * @value 0   Disabled
+ * @value 1   Min
+ * @value 25  Low
+ * @value 50  Medium (Default)
+ * @value 75  High
+ * @value 100 Max
+ *
+ * @category system
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_INT32(CAL_ACC3_PRIO, 50);
+
+/**
+ * Accelerometer X-axis offset
+ *
+ * @category system
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_FLOAT(CAL_ACC3_XOFF, 0.0f);
+
+/**
+ * Accelerometer Y-axis offset
+ *
+ * @category system
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_FLOAT(CAL_ACC3_YOFF, 0.0f);
+
+/**
+ * Accelerometer Z-axis offset
+ *
+ * @category system
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_FLOAT(CAL_ACC3_ZOFF, 0.0f);
+
+/**
+ * Accelerometer X-axis scaling factor
+ *
+ * @category system
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_FLOAT(CAL_ACC3_XSCALE, 1.0f);
+
+/**
+ * Accelerometer Y-axis scaling factor
+ *
+ * @category system
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_FLOAT(CAL_ACC3_YSCALE, 1.0f);
+
+/**
+ * Accelerometer Z-axis scaling factor
+ *
+ * @category system
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_FLOAT(CAL_ACC3_ZSCALE, 1.0f);

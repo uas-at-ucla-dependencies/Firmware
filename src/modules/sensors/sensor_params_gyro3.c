@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2017-2020 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2012-2020 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,10 +32,48 @@
  ****************************************************************************/
 
 /**
- * Thermal compensation for barometric pressure sensors.
+ * ID of the Gyro that the calibration is for.
  *
- * @group Thermal Compensation
- * @reboot_required true
- * @boolean
+ * @category system
+ * @group Sensor Calibration
  */
-PARAM_DEFINE_INT32(TC_B_ENABLE, 0);
+PARAM_DEFINE_INT32(CAL_GYRO3_ID, 0);
+
+/**
+ * Gyro 3 priority.
+ *
+ * @value 0   Disabled
+ * @value 1   Min
+ * @value 25  Low
+ * @value 50  Medium (Default)
+ * @value 75  High
+ * @value 100 Max
+ *
+ * @category system
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_INT32(CAL_GYRO3_PRIO, 50);
+
+/**
+ * Gyro X-axis offset
+ *
+ * @category system
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_FLOAT(CAL_GYRO3_XOFF, 0.0f);
+
+/**
+ * Gyro Y-axis offset
+ *
+ * @category system
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_FLOAT(CAL_GYRO3_YOFF, 0.0f);
+
+/**
+ * Gyro Z-axis offset
+ *
+ * @category system
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_FLOAT(CAL_GYRO3_ZOFF, 0.0f);

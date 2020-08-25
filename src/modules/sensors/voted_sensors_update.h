@@ -61,11 +61,6 @@
 namespace sensors
 {
 
-static constexpr uint8_t GYRO_COUNT_MAX = 3;
-static constexpr uint8_t ACCEL_COUNT_MAX = 3;
-
-static constexpr uint8_t SENSOR_COUNT_MAX = math::max(GYRO_COUNT_MAX, ACCEL_COUNT_MAX);
-
 /**
  ** class VotedSensorsUpdate
  *
@@ -78,7 +73,7 @@ public:
 	 * @param parameters parameter values. These do not have to be initialized when constructing this object.
 	 * Only when calling init(), they have to be initialized.
 	 */
-	VotedSensorsUpdate(bool hil_enabled, uORB::SubscriptionCallbackWorkItem(&vehicle_imu_sub)[3]);
+	VotedSensorsUpdate(bool hil_enabled, uORB::SubscriptionCallbackWorkItem(&vehicle_imu_sub)[4]);
 
 	/**
 	 * initialize subscriptions etc.
@@ -122,15 +117,15 @@ public:
 
 private:
 
-	static constexpr uint8_t ACCEL_COUNT_MAX = 3;
-	static constexpr uint8_t GYRO_COUNT_MAX = 3;
+	static constexpr uint8_t ACCEL_COUNT_MAX = 4;
+	static constexpr uint8_t GYRO_COUNT_MAX = 4;
 	static constexpr uint8_t SENSOR_COUNT_MAX = math::max(ACCEL_COUNT_MAX, GYRO_COUNT_MAX);
 
 	static constexpr uint8_t DEFAULT_PRIORITY = 50;
 
 	struct SensorData {
 		SensorData() = delete;
-		explicit SensorData(ORB_ID meta) : subscription{{meta, 0}, {meta, 1}, {meta, 2}} {}
+		explicit SensorData(ORB_ID meta) : subscription{{meta, 0}, {meta, 1}, {meta, 2}, {meta, 3}} {}
 
 		uORB::Subscription subscription[SENSOR_COUNT_MAX]; /**< raw sensor data subscription */
 		DataValidatorGroup voter{1};
@@ -167,11 +162,12 @@ private:
 	uORB::Publication<sensor_selection_s> _sensor_selection_pub{ORB_ID(sensor_selection)};	/**< handle to the sensor selection uORB topic */
 	uORB::PublicationQueued<subsystem_info_s> _info_pub{ORB_ID(subsystem_info)};	/* subsystem info publication */
 
-	uORB::SubscriptionCallbackWorkItem(&_vehicle_imu_sub)[3];
-	uORB::Subscription _vehicle_imu_status_sub[ACCEL_COUNT_MAX] {
+	uORB::SubscriptionCallbackWorkItem(&_vehicle_imu_sub)[SENSOR_COUNT_MAX];
+	uORB::Subscription _vehicle_imu_status_sub[SENSOR_COUNT_MAX] {
 		{ORB_ID(vehicle_imu_status), 0},
 		{ORB_ID(vehicle_imu_status), 1},
 		{ORB_ID(vehicle_imu_status), 2},
+		{ORB_ID(vehicle_imu_status), 3},
 	};
 
 	sensor_combined_s _last_sensor_data[SENSOR_COUNT_MAX] {};	/**< latest sensor data from all sensors instances */

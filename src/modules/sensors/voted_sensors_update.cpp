@@ -48,7 +48,7 @@ using namespace sensors;
 using namespace matrix;
 using namespace time_literals;
 
-VotedSensorsUpdate::VotedSensorsUpdate(bool hil_enabled, uORB::SubscriptionCallbackWorkItem(&vehicle_imu_sub)[3]) :
+VotedSensorsUpdate::VotedSensorsUpdate(bool hil_enabled, uORB::SubscriptionCallbackWorkItem(&vehicle_imu_sub)[4]) :
 	ModuleParams(nullptr),
 	_vehicle_imu_sub(vehicle_imu_sub),
 	_hil_enabled(hil_enabled)
@@ -137,7 +137,7 @@ void VotedSensorsUpdate::parametersUpdate()
 
 void VotedSensorsUpdate::imuPoll(struct sensor_combined_s &raw)
 {
-	for (int uorb_index = 0; uorb_index < 3; uorb_index++) {
+	for (int uorb_index = 0; uorb_index < SENSOR_COUNT_MAX; uorb_index++) {
 		vehicle_imu_s imu_report;
 
 		if ((_accel.priority[uorb_index] > 0) && (_gyro.priority[uorb_index] > 0)

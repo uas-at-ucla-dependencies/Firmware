@@ -148,7 +148,7 @@ using namespace matrix;
 using namespace time_literals;
 
 static constexpr char sensor_name[] {"accel"};
-static constexpr unsigned MAX_ACCEL_SENS = 3;
+static constexpr unsigned MAX_ACCEL_SENS = 4;
 
 /// Data passed to calibration worker routine
 typedef struct  {
@@ -175,6 +175,7 @@ static calibrate_return read_accelerometer_avg(float (&accel_avg)[MAX_ACCEL_SENS
 		{ORB_ID(sensor_accel), 0, 0},
 		{ORB_ID(sensor_accel), 0, 1},
 		{ORB_ID(sensor_accel), 0, 2},
+		{ORB_ID(sensor_accel), 0, 3},
 	};
 
 	/* use the first sensor to pace the readout, but do per-sensor counts */
@@ -200,6 +201,9 @@ static calibrate_return read_accelerometer_avg(float (&accel_avg)[MAX_ACCEL_SENS
 									break;
 								case 2:
 									offset = Vector3f{sensor_correction.accel_offset_2};
+									break;
+								case 3:
+									offset = Vector3f{sensor_correction.accel_offset_3};
 									break;
 								}
 							}
@@ -385,6 +389,7 @@ int do_accel_calibration_quick(orb_advert_t *mavlink_log_pub)
 		{ORB_ID(sensor_accel), 0},
 		{ORB_ID(sensor_accel), 1},
 		{ORB_ID(sensor_accel), 2},
+		{ORB_ID(sensor_accel), 3},
 	};
 
 	/* use the first sensor to pace the readout, but do per-sensor counts */
@@ -410,6 +415,9 @@ int do_accel_calibration_quick(orb_advert_t *mavlink_log_pub)
 								break;
 							case 2:
 								offset = Vector3f{sensor_correction.accel_offset_2};
+								break;
+							case 3:
+								offset = Vector3f{sensor_correction.accel_offset_3};
 								break;
 							}
 						}
