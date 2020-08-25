@@ -60,7 +60,7 @@ class VehicleIMU : public ModuleParams, public px4::ScheduledWorkItem
 {
 public:
 	VehicleIMU() = delete;
-	VehicleIMU(int instance, uint8_t accel_index = 0, uint8_t gyro_index = 0);
+	VehicleIMU(int instance, uint8_t accel_index, uint8_t gyro_index, const px4::wq_config_t &config);
 
 	~VehicleIMU() override;
 

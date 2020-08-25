@@ -38,6 +38,8 @@
  * @author Roman Bapst
  */
 
+#include "EKF2Selector.hpp"
+
 #include <float.h>
 
 #include <containers/LockGuard.hpp>
@@ -96,9 +98,9 @@
 using math::constrain;
 using namespace time_literals;
 
-// TEMPORARY FOR TESTING ONLY
 class Ekf2;
-static px4::atomic<Ekf2 *> _objects[3];
+static px4::atomic<Ekf2 *> _objects[ORB_MULTI_MAX_INSTANCES];
+static px4::atomic<EKF2Selector *> _ekf2_selector{nullptr};
 
 pthread_mutex_t ekf2_module_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -2592,66 +2594,77 @@ int Ekf2::task_spawn(int argc, char *argv[])
 {
 	LockGuard lg{ekf2_module_mutex};
 
-	int instance_num = argc;
-
-	if (instance_num > 2 || instance_num < 0) {
-		PX4_ERR("invalid instance: %d", instance_num);
-		return PX4_ERROR;
-	}
-
-	if (_objects[instance_num].load() != nullptr) {
-		PX4_ERR("instance %d already exists", instance_num);
-		return PX4_ERROR;
-	}
-
+	bool success = false;
 	bool replay_mode = false;
 
-	//if (argc > 1 && !strcmp(argv[1], "-r")) {
-	//	PX4_INFO("replay mode enabled");
-	//	replay_mode = true;
-	//}
-
-
-	// NuttX memory check
-#if defined(__PX4_NUTTX)
-	struct mallinfo mem;
-
-#if defined(CONFIG_CAN_PASS_STRUCTS)
-	mem = mallinfo();
-#else
-	(void)mallinfo(&mem);
-#endif /* CONFIG_CAN_PASS_STRUCTS */
-
-	// mem.arena: total ram (bytes)
-	// mem.uordblks: used (bytes)
-	// mem.fordblks: free (bytes)
-	// mem.mxordblk: largest remaining block (bytes)
-
-	if (mem.fordblks < 60000) {
-		PX4_ERR("not starting instance %d (only %d bytes free)", instance_num, mem.fordblks);
-		return PX4_ERROR;
+	if (argc > 1 && !strcmp(argv[1], "-r")) {
+		PX4_INFO("replay mode enabled");
+		replay_mode = true;
 	}
 
-#endif
+	int32_t multi_instances = 0;
+	param_get(param_find("EKF2_MULTI_INST"), &multi_instances);
+	const bool multi = (multi_instances > 0);
 
-	Ekf2 *ekf2_inst = new Ekf2(true, instance_num, replay_mode);
+	if (multi) {
+		int32_t sens_imu_mode = 0;
+		param_get(param_find("SENS_IMU_MODE"), &sens_imu_mode);
 
-	if (ekf2_inst) {
-		_objects[instance_num].store(ekf2_inst);
-		//_task_id = task_id_is_work_queue;
 
-		ekf2_inst->ScheduleNow();
-		return PX4_OK;
+		if (sens_imu_mode != 0) {
+			// SENS_IMU_MODE must be 0 for multi-EKF
 
-	} else {
-		PX4_ERR("alloc failed");
+		}
+
 	}
 
-	delete ekf2_inst;
-	_objects[instance_num].store(nullptr);
-	//_task_id = -1;
+	if (multi) {
+		int32_t sens_mag_mode = 0;
+		param_get(param_find("SENS_MAG_MODE"), &sens_mag_mode);
 
-	return PX4_ERROR;
+		// SENS_IMU_MODE == 0 for multi-EKF
+		// SENS_MAG_MODE == 1 for multi-mag
+		// number of IMUS? SENS_IMU_MODE
+		// number of MAGS? SENS_IMU_MAG
+		//  number of instances ORB_MULTI_MAX_INSTANCES
+
+		for (int i = 0; i < ORB_MULTI_MAX_INSTANCES; i++) {
+			if (_objects[i].load() == nullptr) {
+				if (orb_exists(ORB_ID(vehicle_imu), i) == PX4_OK) {
+					Ekf2 *ekf2_inst = new Ekf2(true, i, replay_mode);
+
+					if (ekf2_inst) {
+						_objects[i].store(ekf2_inst);
+
+						ekf2_inst->ScheduleNow();
+						success = true;
+
+					} else {
+						PX4_ERR("%d alloc failed", i);
+					}
+
+				} else {
+					PX4_INFO("instance %d already running", i);
+				}
+			}
+		}
+
+		// Start EKF2Selector if it's not already running
+		if (_ekf2_selector.load() == nullptr) {
+			EKF2Selector *inst = new EKF2Selector();
+
+			if (inst) {
+				_ekf2_selector.store(inst);
+				inst->Start();
+
+			} else {
+				PX4_ERR("Failed to start EKF2 selector");
+				return PX4_ERROR;
+			}
+		}
+	}
+
+	return success ? PX4_OK : PX4_ERROR;
 }
 
 int Ekf2::print_usage(const char *reason)
@@ -2680,63 +2693,87 @@ timestamps from the sensor topics.
 	return 0;
 }
 
-extern "C" __EXPORT int ekf2_selector_main(int argc, char *argv[]);
-
 extern "C" __EXPORT int ekf2_main(int argc, char *argv[])
 {
-
-	int32_t multi_mode = 0;
-	param_get(param_find("EKF2_MULTI_MODE"), &multi_mode);
-	const bool multi = (multi_mode == 1);
-
+	if (argc <= 1 ||
+		strcmp(argv[1], "-h")    == 0 ||
+		strcmp(argv[1], "help")  == 0 ||
+		strcmp(argv[1], "info")  == 0 ||
+		strcmp(argv[1], "usage") == 0) {
+		return Ekf2::print_usage();
+	}
 
 	if (strcmp(argv[1], "start") == 0) {
+		int ret = 0;
+		Ekf2::lock_module();
 
-		// TODO: check EKF2_MULTI_INST
-		Ekf2::task_spawn(0, nullptr);
+		ret = Ekf2::task_spawn(argc - 1, argv + 1);
 
-		if (multi) {
-			if (orb_exists(ORB_ID(vehicle_imu), 1) == PX4_OK) {
-				Ekf2::task_spawn(1, nullptr);
-			}
-
-			if (orb_exists(ORB_ID(vehicle_imu), 2) == PX4_OK) {
-				Ekf2::task_spawn(2, nullptr);
-			}
-
-			ekf2_selector_main(argc, argv);
+		if (ret < 0) {
+			PX4_ERR("start failed (%i)", ret);
 		}
 
+		Ekf2::unlock_module();
+		return ret;
+
+	} else if (strcmp(argv[1], "status") == 0) {
+		Ekf2::lock_module();
+
+		if (_ekf2_selector.load()) {
+			_ekf2_selector.load()->PrintStatus();
+		}
+
+		for (int i = 0; i < ORB_MULTI_MAX_INSTANCES; i++) {
+			if (_objects[i].load()) {
+				_objects[i].load()->print_status();
+			}
+		}
+
+		Ekf2::unlock_module();
 		return 0;
 
 	} else if (strcmp(argv[1], "stop") == 0) {
 		Ekf2::lock_module();
 
-		ekf2_selector_main(argc, argv);
+		// TODO: if stop is specified with an instance then stop only
+		if (argc > 2) {
+			int instance = atoi(argv[2]);
 
-		for (int i = 0; i < 3; i++) {
-			if (_objects[i].load() != nullptr) {
-				_objects[i].load()->request_stop();
+			if (instance > 0 && instance < ORB_MULTI_MAX_INSTANCES) {
+				Ekf2 *inst = _objects[instance].load();
+				if (inst) {
+					inst->request_stop();
+					px4_usleep(20000); // 20 ms
+					delete inst;
+					_objects[instance].store(nullptr);
+				}
+			}
+		} else {
+			// otherwise stop everything
+			if (_ekf2_selector.load()) {
+				_ekf2_selector.load()->Stop();
+				delete _ekf2_selector.load();
+				_ekf2_selector.store(nullptr);
+			}
+
+			for (int i = 0; i < ORB_MULTI_MAX_INSTANCES; i++) {
+				Ekf2 *inst = _objects[i].load();
+				if (inst) {
+					inst->request_stop();
+					px4_usleep(20000); // 20 ms
+					delete inst;
+					_objects[i].store(nullptr);
+				}
 			}
 		}
 
 		Ekf2::unlock_module();
-
-		return 0;
-
-	} else if (strcmp(argv[1], "status") == 0) {
-		Ekf2::lock_module();
-		ekf2_selector_main(argc, argv);
-
-		for (int i = 0; i < 3; i++) {
-			if (_objects[i].load() != nullptr) {
-				_objects[i].load()->print_status();
-			}
-		}
-		Ekf2::unlock_module();
-
-		return 0;
+		return PX4_OK;
 	}
 
-	return 0;
+	Ekf2::lock_module(); // Lock here, as the method could access _object.
+	int ret = Ekf2::custom_command(argc - 1, argv + 1);
+	Ekf2::unlock_module();
+
+	return ret;
 }

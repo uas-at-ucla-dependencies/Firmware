@@ -38,21 +38,28 @@ using matrix::Quatf;
 using matrix::Vector2f;
 
 EKF2Selector::EKF2Selector() :
-	ModuleParams(nullptr),
 	ScheduledWorkItem(MODULE_NAME, px4::wq_configurations::nav_and_controllers)
 {
-	updateParams();
 }
 
 EKF2Selector::~EKF2Selector()
 {
-	ScheduleClear();
+	Stop();
 }
 
-bool EKF2Selector::init()
+bool EKF2Selector::Start()
 {
 	ScheduleNow();
 	return true;
+}
+
+void EKF2Selector::Stop()
+{
+	for (int i = 0; i < MAX_INSTANCES; i++) {
+		_instance[_selected_instance].estimator_attitude_sub.unregisterCallback();
+	}
+
+	ScheduleClear();
 }
 
 bool EKF2Selector::SelectInstance(uint8_t ekf_instance, bool force_reselect)
@@ -165,12 +172,7 @@ bool EKF2Selector::SelectInstance(uint8_t ekf_instance, bool force_reselect)
 
 void EKF2Selector::Run()
 {
-	if (should_exit()) {
-		exit_and_cleanup();
-		return;
-	}
-
-	// re-schedule as watchdog timeout
+	// re-schedule as backup timeout
 	ScheduleDelayed(10_ms);
 
 	// update combined test ratio for all estimators
@@ -358,7 +360,7 @@ void EKF2Selector::Run()
 	}
 }
 
-int EKF2Selector::print_status()
+void EKF2Selector::PrintStatus()
 {
 	PX4_INFO("available instances: %d", _available_instances);
 
@@ -377,74 +379,4 @@ int EKF2Selector::print_status()
 				 inst.tilt_align, inst.yaw_align, (double)inst.combined_test_ratio);
 		}
 	}
-
-	return 0;
-}
-
-int EKF2Selector::task_spawn(int argc, char *argv[])
-{
-	EKF2Selector *instance = new EKF2Selector();
-
-	if (instance) {
-		_object.store(instance);
-		_task_id = task_id_is_work_queue;
-
-		if (instance->init()) {
-			return PX4_OK;
-		}
-
-	} else {
-		PX4_ERR("alloc failed");
-	}
-
-	delete instance;
-	_object.store(nullptr);
-	_task_id = -1;
-
-	return PX4_ERROR;
-}
-
-int EKF2Selector::custom_command(int argc, char *argv[])
-{
-	// TODO: manually select different instance
-
-	const char *verb = argv[0];
-
-	if (!strcmp(verb, "select")) {
-		if (is_running()) {
-			int instance = atoi(argv[1]);
-			get_instance()->RequestInstanceChange(instance);
-		}
-
-		return 0;
-	}
-
-
-	return print_usage("unknown command");
-}
-
-int EKF2Selector::print_usage(const char *reason)
-{
-	if (reason) {
-		PX4_WARN("%s\n", reason);
-	}
-
-	PRINT_MODULE_DESCRIPTION(
-		R"DESCR_STR(
-### Description
-
-
-)DESCR_STR");
-
-	PRINT_MODULE_USAGE_NAME("ekf2_selector", "system");
-	PRINT_MODULE_USAGE_COMMAND("start");
-	PRINT_MODULE_USAGE_DEFAULT_COMMANDS();
-	PRINT_MODULE_USAGE_COMMAND("switch");
-
-	return 0;
-}
-
-extern "C" __EXPORT int ekf2_selector_main(int argc, char *argv[])
-{
-	return EKF2Selector::main(argc, argv);
 }

@@ -34,11 +34,6 @@
 #pragma once
 
 #include <px4_platform_common/px4_config.h>
-#include <px4_platform_common/module.h>
-#include <px4_platform_common/module_params.h>
-#include <px4_platform_common/getopt.h>
-#include <px4_platform_common/posix.h>
-#include <px4_platform_common/tasks.h>
 #include <px4_platform_common/time.h>
 #include <px4_platform_common/log.h>
 #include <lib/mathlib/mathlib.h>
@@ -54,37 +49,26 @@
 #include <uORB/topics/vehicle_local_position.h>
 #include <uORB/topics/vehicle_global_position.h>
 
-class EKF2Selector : public ModuleBase<EKF2Selector>, public ModuleParams, public px4::ScheduledWorkItem
+class EKF2Selector : public px4::ScheduledWorkItem
 {
-
 public:
 	EKF2Selector();
 	~EKF2Selector() override;
 
-	/** @see ModuleBase */
-	static int task_spawn(int argc, char *argv[]);
+	bool Start();
+	void Stop();
 
-	/** @see ModuleBase */
-	static int custom_command(int argc, char *argv[]);
-
-	/** @see ModuleBase */
-	static int print_usage(const char *reason = nullptr);
-
-	bool init();
-
-	int print_status() override;
+	void PrintStatus();
 
 	void RequestInstanceChange(uint8_t instance) { _requested_instance.store(instance); }
 
 private:
-
 	void Run() override;
 
 	bool SelectInstance(uint8_t instance, bool force_reselect = false);
 
 	// Subscriptions (per estimator instance)
 	struct EstimatorInstance {
-
 		EstimatorInstance(EKF2Selector *selector, uint8_t i) :
 			estimator_attitude_sub{selector, ORB_ID(estimator_attitude), i},
 			estimator_status_sub{ORB_ID(estimator_status), i},
@@ -114,12 +98,13 @@ private:
 		const uint8_t instance;
 	};
 
-	static constexpr uint8_t MAX_INSTANCES{3};
+	static constexpr uint8_t MAX_INSTANCES{4};
 
 	EstimatorInstance _instance[MAX_INSTANCES] {
 		{this, 0},
 		{this, 1},
 		{this, 2},
+		{this, 3},
 	};
 
 	px4::atomic<uint8_t> _requested_instance{0};
@@ -164,8 +149,8 @@ private:
 
 
 	// Publications
-	uORB::Publication<sensor_selection_s>          _sensor_selection_pub{ORB_ID(sensor_selection)};
 	uORB::Publication<estimator_selector_status_s> _estimator_selector_status_pub{ORB_ID(estimator_selector_status)};
+	uORB::Publication<sensor_selection_s>          _sensor_selection_pub{ORB_ID(sensor_selection)};
 	uORB::Publication<vehicle_attitude_s>          _vehicle_attitude_pub{ORB_ID(vehicle_attitude)};
 	uORB::Publication<vehicle_global_position_s>   _vehicle_global_position_pub{ORB_ID(vehicle_global_position)};
 	uORB::Publication<vehicle_local_position_s>    _vehicle_local_position_pub{ORB_ID(vehicle_local_position)};

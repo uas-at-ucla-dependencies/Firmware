@@ -45,9 +45,9 @@ using math::constrain;
 namespace sensors
 {
 
-VehicleIMU::VehicleIMU(int instance, uint8_t accel_index, uint8_t gyro_index) :
+VehicleIMU::VehicleIMU(int instance, uint8_t accel_index, uint8_t gyro_index, const px4::wq_config_t &config) :
 	ModuleParams(nullptr),
-	ScheduledWorkItem(MODULE_NAME, px4::ins_instance_to_wq(instance)),
+	ScheduledWorkItem(MODULE_NAME, config),
 	_sensor_accel_sub(this, ORB_ID(sensor_accel), accel_index),
 	_sensor_gyro_sub(this, ORB_ID(sensor_gyro), gyro_index),
 	_instance(instance)

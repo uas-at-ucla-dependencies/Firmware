@@ -34,22 +34,14 @@
 add_subdirectory(Utility)
 
 px4_add_module(
-	MODULE modules__ekf2_selector
-	MAIN ekf2_selector
-	SRCS
-		EKF2Selector.cpp
-		EKF2Selector.hpp
-	DEPENDS
-		px4_work_queue
-	)
-
-px4_add_module(
 	MODULE modules__ekf2
 	MAIN ekf2
 	COMPILE_FLAGS
 	STACK_MAX 2400
 	SRCS
 		ekf2_main.cpp
+		EKF2Selector.cpp
+		EKF2Selector.hpp
 	DEPENDS
 		git_ecl
 		ecl_EKF

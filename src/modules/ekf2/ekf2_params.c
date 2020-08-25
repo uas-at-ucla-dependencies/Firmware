@@ -821,12 +821,15 @@ PARAM_DEFINE_FLOAT(EKF2_TERR_NOISE, 5.0f);
 PARAM_DEFINE_FLOAT(EKF2_TERR_GRAD, 0.5f);
 
 /**
- * EKF2 multi-instance mode
+ * Number of instances.
+ *
+ * Set to 0 to disable multi-instance mode entirely.
  *
  * @group EKF2
- * @boolean
+ * @min 0
+ * @max 4
  */
-PARAM_DEFINE_INT32(EKF2_MULTI_MODE, 1);
+PARAM_DEFINE_INT32(EKF2_MULTI_INST, 1);
 
 /**
  * X position of IMU in body frame (forward axis with origin relative to vehicle centre of gravity)
