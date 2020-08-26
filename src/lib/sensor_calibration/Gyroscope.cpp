@@ -48,8 +48,9 @@ Gyroscope::Gyroscope()
 	Reset();
 }
 
-Gyroscope::Gyroscope(uint32_t device_id)
+Gyroscope::Gyroscope(uint32_t device_id, bool external)
 {
+	set_external(external);
 	Reset();
 	set_device_id(device_id);
 }
@@ -61,6 +62,26 @@ void Gyroscope::set_device_id(uint32_t device_id)
 		ParametersUpdate();
 		SensorCorrectionsUpdate(true);
 	}
+}
+
+void Gyroscope::set_external(bool external)
+{
+	// update priority default appropriately if not set
+	if (_calibration_index < 0) {
+		if ((_priority < 0) || (_priority > 100)) {
+			_priority = external ? DEFAULT_EXTERNAL_PRIORITY : DEFAULT_PRIORITY;
+
+		} else if (!_external && external && (_priority == DEFAULT_PRIORITY)) {
+			// internal -> external
+			_priority = DEFAULT_EXTERNAL_PRIORITY;
+
+		} else if (_external && !external && (_priority == DEFAULT_EXTERNAL_PRIORITY)) {
+			// external -> internal
+			_priority = DEFAULT_PRIORITY;
+		}
+	}
+
+	_external = external;
 }
 
 void Gyroscope::SensorCorrectionsUpdate(bool force)
@@ -102,6 +123,12 @@ void Gyroscope::SensorCorrectionsUpdate(bool force)
 	}
 }
 
+void Gyroscope::set_rotation(Rotation rotation)
+{
+	_rotation_enum = rotation;
+	_rotation = get_rot_matrix(rotation);
+}
+
 void Gyroscope::ParametersUpdate()
 {
 	if (_device_id == 0) {
@@ -113,22 +140,42 @@ void Gyroscope::ParametersUpdate()
 
 	if (_calibration_index >= 0) {
 
-		if (!_external) {
-			_rotation = GetBoardRotation();
+		// CAL_GYROx_ROT
+		int32_t rotation_value = GetCalibrationParam(SensorString(), "ROT", _calibration_index);
+
+		if (_external) {
+			if ((rotation_value >= ROTATION_MAX) || (rotation_value < 0)) {
+				PX4_ERR("External %s %d (%d) invalid rotation %d, resetting to rotation none",
+					SensorString(), _device_id, _calibration_index, rotation_value);
+				rotation_value = ROTATION_NONE;
+				SetCalibrationParam(SensorString(), "ROT", _calibration_index, rotation_value);
+			}
+
+			_rotation_enum = static_cast<Rotation>(rotation_value);
+			_rotation = get_rot_matrix(_rotation_enum);
 
 		} else {
-			// TODO: per sensor external rotation
-			_rotation.setIdentity();
+			// internal, CAL_GYROx_ROT -1
+			if (rotation_value != -1) {
+				PX4_ERR("Internal %s %d (%d) invalid rotation %d, resetting",
+					SensorString(), _device_id, _calibration_index, rotation_value);
+				SetCalibrationParam(SensorString(), "ROT", _calibration_index, -1);
+			}
+
+			_rotation = GetBoardRotation();
+			_rotation_enum = ROTATION_NONE;
 		}
 
 		// CAL_GYROx_PRIO
 		_priority = GetCalibrationParam(SensorString(), "PRIO", _calibration_index);
 
-		if (_priority < 0 || _priority > 100) {
+		if ((_priority < 0) || (_priority > 100)) {
 			// reset to default
-			PX4_ERR("%s %d invalid priority %d, resetting to %d", SensorString(), _calibration_index, _priority, DEFAULT_PRIORITY);
-			SetCalibrationParam(SensorString(), "PRIO", _calibration_index, DEFAULT_PRIORITY);
-			_priority = DEFAULT_PRIORITY;
+			int32_t new_priority = _external ? DEFAULT_EXTERNAL_PRIORITY : DEFAULT_PRIORITY;
+			PX4_ERR("%s %d (%d) invalid priority %d, resetting to %d",
+				SensorString(), _device_id, _calibration_index, _priority, new_priority);
+			SetCalibrationParam(SensorString(), "PRIO", _calibration_index, new_priority);
+			_priority = new_priority;
 		}
 
 		// CAL_GYROx_OFF{X,Y,Z}
@@ -142,6 +189,7 @@ void Gyroscope::ParametersUpdate()
 void Gyroscope::Reset()
 {
 	_rotation.setIdentity();
+	_rotation_enum = ROTATION_NONE;
 	_offset.zero();
 	_thermal_offset.zero();
 
@@ -158,12 +206,12 @@ bool Gyroscope::ParametersSave()
 		SetCalibrationParam(SensorString(), "PRIO", _calibration_index, _priority);
 		SetCalibrationParamsVector3f(SensorString(), "OFF", _calibration_index, _offset);
 
-		// if (_external) {
-		// 	SetCalibrationParam(SensorString(), "ROT", _calibration_index, (int32_t)_rotation_enum);
+		if (_external) {
+			SetCalibrationParam(SensorString(), "ROT", _calibration_index, (int32_t)_rotation_enum);
 
-		// } else {
-		// 	SetCalibrationParam(SensorString(), "ROT", _calibration_index, -1);
-		// }
+		} else {
+			SetCalibrationParam(SensorString(), "ROT", _calibration_index, -1);
+		}
 
 		return true;
 	}
