@@ -11,4 +11,6 @@ RUN git clone https://github.com/intel/mavlink-router.git && \
     make && \
     make install
 
+RUN apt-get update && apt-get install -y python-jinja2
+
 WORKDIR /workspace
