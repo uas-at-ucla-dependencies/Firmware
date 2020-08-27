@@ -13,7 +13,7 @@ deploy:
   provider: script
   script: bash docker_push.sh
   on:
-    branch: master
+    branch: release/1.10-uasatucla
 
 # Encrypted Docker Hub password
 env:
