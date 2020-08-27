@@ -57,6 +57,8 @@ Running with Docker is the easiest, but you can also try running directly on you
 ### MacOS
 **Setup:**
 [PX4 Setup Instructions](https://dev.px4.io/v1.10/en/setup/dev_env_mac.html)
+[SITL Gazebo Setup Instructions](https://github.com/PX4/sitl_gazebo#installation-gazebo-9)
+* Only follow installation instructions, you do not have to build anything yet.
 If you have trouble with Python, you can try setting up a virtual environment, which the following script does automatically:
 ```bash
 ./setup_python_venv.sh

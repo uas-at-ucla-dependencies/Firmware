@@ -1,5 +1,7 @@
 FROM px4io/px4-dev-simulation-bionic@sha256:3ccfb2c582ae06b212a50e738356b2063b7627087edd3a6567e4836a68e8c61a
 
+RUN apt-get update && apt-get install -y python-jinja2 python-numpy
+
 # Install mavlink-router
 RUN apt-get update && apt-get install -y python-future python3-future libtool autoconf
 RUN git clone https://github.com/intel/mavlink-router.git && \
@@ -10,7 +12,5 @@ RUN git clone https://github.com/intel/mavlink-router.git && \
         --prefix=/usr && \
     make && \
     make install
-
-RUN apt-get update && apt-get install -y python-jinja2
 
 WORKDIR /workspace
