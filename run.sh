@@ -14,11 +14,6 @@ cd "$(dirname "$0")";
 # Exit if any errors are encountered.
 set -e
 
-# Activate python virtualenv if it exists
-if test -f "px4_venv/bin/activate"; then
-  source "px4_venv/bin/activate"
-fi
-
 # Load arguments into variables.
 ACTION=$1
 FRAME_TYPE=$2
