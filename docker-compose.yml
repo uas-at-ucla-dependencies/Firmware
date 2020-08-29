@@ -19,7 +19,7 @@ services:
       - .:/workspace:cached
     command: /bin/sh -c "while sleep 1000; do :; done"
     ports:
-      - 14570:14570/udp
+      - 18570:18570/udp
       - 14580:14580/udp
       - 5760:5760/tcp
 
