@@ -1,6 +1,6 @@
 FROM px4io/px4-dev-simulation-bionic@sha256:3ccfb2c582ae06b212a50e738356b2063b7627087edd3a6567e4836a68e8c61a
 
-RUN apt-get update && apt-get install -y python-jinja2 python-numpy python-empy
+RUN apt-get update && apt-get install -y python-jinja2 python-numpy python-empy python-pip
 RUN pip install catkin_pkg
 
 # Install mavlink-router
