@@ -16,25 +16,22 @@ set -e
 
 # Load arguments into variables.
 ACTION=$1
-FRAME_TYPE=$2
+FRAME_TYPE=$2 # quad, plane, or any other frame supported supported by sitl
 LOCATION=$3
 
-DOCKER_IP="192.168.3.20" # drone's docker network ip
+# sitl_run.sh arguments
+DEBUGGER="none"
+PROGRAM="gazebo"
 
-unset GAZEBO_MODE
-if [ "$FRAME_TYPE" = "" ] || [ "$FRAME_TYPE" = "quad" ]
+MODEL=$FRAME_TYPE
+if [ "$MODEL" = "" ] || [ "$MODEL" = "quad" ]
 then
-  GAZEBO_MODE="none"
-elif [ "$FRAME_TYPE" = "plane" ]
-then
-  GAZEBO_MODE="plane"
-else
-  echo "Unknown frame type: $FRAME_TYPE"
-  exit 1
+  MODEL="none"
 fi
 
+# Note: A lot of the important build/run stuff happens in Firmware/platforms/posix/cmake/sitl_target.cmake if you want to understand how it works
 DIR="$(pwd)"
-SITL_RUN_CMD="cd \"$DIR/build/px4_sitl_default/tmp\" && \"$DIR/Tools/sitl_run.sh\" \"$DIR/build/px4_sitl_default/bin/px4\" none gazebo $GAZEBO_MODE \"$DIR\" \"$DIR/build/px4_sitl_default\""
+SITL_RUN_CMD="cd \"$DIR/build/px4_sitl_default/tmp\" && \"$DIR/Tools/sitl_run.sh\" \"$DIR/build/px4_sitl_default/bin/px4\" $DEBUGGER $PROGRAM $MODEL \"$DIR\" \"$DIR/build/px4_sitl_default\""
 
 # Determine what action to perform.
 if [ "$ACTION" = "simulate_headless" ]
@@ -45,7 +42,7 @@ then
   RUN_CMD="$SITL_RUN_CMD"
 elif [ "$ACTION" = "mavlink_router" ]
 then
-  mavlink-routerd -e localhost:9010 -e $DOCKER_IP:9011 0.0.0.0:14550
+  mavlink-routerd 0.0.0.0:14550 # example using a specific endpoint: mavlink-routerd -e localhost:9010 0.0.0.0:14550
   exit
 else
   echo "Unknown action given: $ACTION"
