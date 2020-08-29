@@ -101,7 +101,7 @@ You can also just flash [this disk image](https://drive.google.com/open?id=1LZpy
 
 # Using QGroundControl
 ## Establishing Communication
-If you run QGroundControl on the same computer as the simulator, QGroundControl will automatically connect to it. However, it is important to know how to connect to a remote machine, whether it be a simulator or the real drone.
+If you run QGroundControl on the same computer as the simulator, QGroundControl may automatically connect to it. However, it is important to know how to connect to a remote machine, whether it be a simulator or the real drone. You can also use these instructions if QGroundControl does not automatically connect.
 
 The PX4 Firmware uses TCP to communicate with the Gazebo simulator and UDP to communicate with outside world, using [the ports documented here](https://dev.px4.io/master/en/simulation/#default-px4-mavlink-udp-ports) (scroll down on that page to see a nice diagram).
 
@@ -113,7 +113,7 @@ As per the documentation, we will be listening on UDP port 14550 in QGroundContr
 3. In the Type dropdown, select `UDP`.
 4. The Listening Port should default to 14550.
 5. Click `Add` under Target Hosts.
-6. Type in `<address>:14570`, where `<address>` is the IP address or hostname of the machine the simulator is running on. For example, if you are using a Raspberry Pi plugged in to your computer or on your local network, enter `raspberrypi.local:14570`. Note that if you use a hostname like this, it will be converted to the IPv4 address before the configuration is saved.
+6. Type in `<address>:14570`, where `<address>` is the IP address or hostname of the machine the simulator is running on (`localhost` if it's the same computer). For example, if you are using a Raspberry Pi plugged in to your computer or on your local network, enter `raspberrypi.local:14570`. Note that if you use a hostname like this, it will be converted to the IPv4 address before the configuration is saved.
 7. Click `Ok`.
 8. Start the simulator and click `Connect` from the `Comm Links` tab.
 9. You should see the state of the drone in the status bar, and no longer see "Waiting for Vehicle Connection."
