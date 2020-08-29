@@ -101,11 +101,13 @@ You can also just flash [this disk image](https://drive.google.com/open?id=1LZpy
 
 # Using QGroundControl
 ## Establishing Communication
-If you run QGroundControl on the same computer as the simulator, QGroundControl will automatically connect to it. However, it is important to know how to connect to a remote machine, whether it be a simulator or the real drone.
+If you run QGroundControl on the same computer as the simulator, QGroundControl may automatically connect to it. However, it is important to know how to connect to a remote machine, whether it be a simulator or the real drone. You can also use these instructions if QGroundControl does not automatically connect.
 
 The PX4 Firmware uses TCP to communicate with the Gazebo simulator and UDP to communicate with outside world, using [the ports documented here](https://dev.px4.io/master/en/simulation/#default-px4-mavlink-udp-ports) (scroll down on that page to see a nice diagram).
 
 As per the documentation, we will be listening on UDP port 14550 in QGroundControl. We also need to know that the port used to send and receive on the other end (where the PX4 Firmware is running) is 14570.
+
+**NOTE:** In PX4 v1.11, port 18570 is used instead of 14570. You only have to worry about this if you know you are using v1.11. The resources referenced in this tutorial are all for v1.10.
 
 ### Instructions
 1. Click on the `Q` icon in the top left in QGroundControl.
@@ -113,7 +115,7 @@ As per the documentation, we will be listening on UDP port 14550 in QGroundContr
 3. In the Type dropdown, select `UDP`.
 4. The Listening Port should default to 14550.
 5. Click `Add` under Target Hosts.
-6. Type in `<address>:14570`, where `<address>` is the IP address or hostname of the machine the simulator is running on. For example, if you are using a Raspberry Pi plugged in to your computer or on your local network, enter `raspberrypi.local:14570`. Note that if you use a hostname like this, it will be converted to the IPv4 address before the configuration is saved.
+6. Type in `<address>:14570`, where `<address>` is the IP address or hostname of the machine the simulator is running on (`localhost` if it's the same computer). For example, if you are using a Raspberry Pi plugged in to your computer or on your local network, enter `raspberrypi.local:14570`. Note that if you use a hostname like this, it will be converted to the IPv4 address before the configuration is saved.
 7. Click `Ok`.
 8. Start the simulator and click `Connect` from the `Comm Links` tab.
 9. You should see the state of the drone in the status bar, and no longer see "Waiting for Vehicle Connection."
@@ -152,7 +154,9 @@ If you're using Docker and started the simulator as in [Running with Docker](#ru
 ```bash
 docker exec -it px4-simulator ./run.sh mavlink_router
 ```
-This runs something like `mavlink-routerd -e 192.168.3.20:9011 0.0.0.0:14550`, where one or more destination addresses are set with `-e`, and the last argument is the address of the flight controller.
+This runs `mavlink-routerd 0.0.0.0:14550`.
+
+A more advanced use of MAVLink Router would be something like `mavlink-routerd -e 192.168.3.20:9011 0.0.0.0:14550`, where one or more destination addresses are set with `-e`, and the last argument is the address of the flight controller.
 
 MAVLink Router automatically listens on TCP port **5760**. To connect to this (from any computer), create a new Comm Link as in the [previous instructions](/README.md#instructions), except this one will be of type `TCP`. The TCP Port should default to 5760, and the Host Address needs to be set to the IP address of the computer running MAVLink Router.
 
