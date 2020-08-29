@@ -152,7 +152,9 @@ If you're using Docker and started the simulator as in [Running with Docker](#ru
 ```bash
 docker exec -it px4-simulator ./run.sh mavlink_router
 ```
-This runs something like `mavlink-routerd -e 192.168.3.20:9011 0.0.0.0:14550`, where one or more destination addresses are set with `-e`, and the last argument is the address of the flight controller.
+This runs `mavlink-routerd 0.0.0.0:14550`.
+
+A more advanced use of MAVLink Router would be something like `mavlink-routerd -e 192.168.3.20:9011 0.0.0.0:14550`, where one or more destination addresses are set with `-e`, and the last argument is the address of the flight controller.
 
 MAVLink Router automatically listens on TCP port **5760**. To connect to this (from any computer), create a new Comm Link as in the [previous instructions](/README.md#instructions), except this one will be of type `TCP`. The TCP Port should default to 5760, and the Host Address needs to be set to the IP address of the computer running MAVLink Router.
 
