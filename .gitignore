@@ -113,3 +113,6 @@ src/systemcmds/topic_listener/listener_generated.cpp
 # SITL
 dataman
 eeprom/
+
+# Python virtual environment
+px4_venv/

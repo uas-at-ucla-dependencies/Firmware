@@ -1,0 +1,30 @@
+version: '3.2'
+
+services:
+  cache:
+    image: uasatucla/px4-simulator-aviata-dev
+
+  dev:
+    depends_on:
+      - cache
+    build:
+      context: .devcontainer
+      cache_from:
+        - uasatucla/px4-simulator-aviata-dev
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+    image: uasatucla/px4-simulator-aviata-dev
+    container_name: px4-simulator-aviata-dev
+    volumes:
+      - .:/workspace:cached
+    command: /bin/sh -c "while sleep 1000; do :; done"
+    ports:
+      - 14570:14570/udp
+      - 14580:14580/udp
+      - 5760:5760/tcp
+
+  prod:
+    build:
+      context: .
+      dockerfile: prod.Dockerfile
+    image: uasatucla/px4-simulator-aviata

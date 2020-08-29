@@ -1,35 +1,21 @@
-language: cpp
-
-git:
-  depth: 100
-  submodules: false
-
-matrix:
-  fast_finish: true
-  include:
-    - os: linux
-      dist: xenial
-      # In order to stay under the coverity rate limit, we only run this weekly
-      # and not on push which is configured in travis-ci settings.
-      if: branch = master
-
-before_install:
-    - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
-
-install:
-    - export PATH=$HOME/.local/bin:$PATH
-    - pip install --user --upgrade pip
-    - pip install --user -r Tools/setup/requirements.txt
+os:
+  - linux
 
 script:
-    - make
+  - "docker-compose build dev" # TEMPORARY
+  - "docker-compose up --build -d dev"
+  - "docker-compose exec dev ./build.sh"
+  - "docker-compose exec dev echo \"Running imaginary tests\""
+  - "docker-compose down"
 
-addons:
-  coverity_scan:
-    project:
-      name: "PX4/Firmware"
-      description: "Build submitted via Travis CI"
-    notification_email: ci@px4.io
-    build_command_prepend: "make distclean"
-    build_command: "make px4_sitl_default"
-    branch_pattern: coverity_scan
+deploy:
+  skip_cleanup: true
+  provider: script
+  script: bash docker_push.sh
+  on:
+    branch: release/1.11-aviata
+
+# Encrypted Docker Hub password
+env:
+  global:
+    secure: "ToGZ5r8JlS3zo0FQ/xRxwD06O+9HsRjoYGBnHOoqvtstwERv37cH2ZxOHVEN8jBiAb4rGAjMAHoFeQMjYfO07rmNtyq4IRL21MpzzUeHk6ozzis2VXED0UnCEg+WqktKl7u8Wo+AIa+18fJ5zi2795Va5uoaqDb6xxc1o2NmNoqvQKiJIuzo4+eJAbfNcf5l14ldOkswFOb/kTyzXxagkIvuYSh4FyAn/mJtCD4+/yhd01x4S+RTqdwUaO28yqgpsQe8KV9BxZ2xyHqLNB28HH5vhu3lNcXUoYvSOoPDwjGvtCwVchBQgwO5pyDT94ajAZEfT/FSlLlzJk7AoK+x0ExPcgdicGgxcDPMLMShSue/2Yz3Vq9YaFCWI0PNIfgNd6XTi3LX42kHJkzekw5nssQqbuvCg7swLARCJUrDIB/Q81KSgv6mWB7ra8oyMpcRQxQUjxfL7HpX0U2PyKAG/JEDTbkgbpCMkoJwRAjzQYIKLv+ZPBqv0cqgbjHmXfXykC9VsrMMqwTns0qNAdOejATcOoTi1pubzOp2FOVzFUJXHXiVMmn+oJACsqqObc6lup0IFmNrc7rm+PQRkDAqipWY/fdORtF3rIdkTdM8NDC94oGic6LSiaYQV4EEE3PTc3q37JHiqAM6kaq42pVouczz5XDWnqQmG4eGvXH26z4="
