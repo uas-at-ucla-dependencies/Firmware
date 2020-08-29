@@ -107,6 +107,8 @@ The PX4 Firmware uses TCP to communicate with the Gazebo simulator and UDP to co
 
 As per the documentation, we will be listening on UDP port 14550 in QGroundControl. We also need to know that the port used to send and receive on the other end (where the PX4 Firmware is running) is 14570.
 
+**NOTE:** In PX4 v1.11, port 18570 is used instead of 14570. You only have to worry about this if you know you are using v1.11. The resources referenced in this tutorial are all for v1.10.
+
 ### Instructions
 1. Click on the `Q` icon in the top left in QGroundControl.
 2. Select `Comm Links` and then `Add` at the bottom of the screen.
