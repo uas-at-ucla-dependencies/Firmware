@@ -57,10 +57,9 @@ The ```simulate_headless``` action runs the PX4 Firmware, which is fed simulated
 Running with Docker is the easiest, but you can also try running directly on your machine.
 [Clone the UAS@UCLA PX4 Firmware repository](https://github.com/uas-at-ucla-dependencies/Firmware.git), which contains the PX4 Firmware and scripts for setting up simulation.
 ### MacOS
-**It is not recommended to try running on MacOS becuase Gazebo 9 has trouble installing. Try at your own risk.**
 **Setup:**
 [PX4 Setup Instructions](https://dev.px4.io/v1.10/en/setup/dev_env_mac.html)
-[SITL Gazebo Setup Instructions](https://github.com/PX4/sitl_gazebo#installation-gazebo-9)
+[SITL Gazebo Setup Instructions](https://github.com/PX4/PX4-SITL_gazebo#installation-gazebo-9)
 * Only follow installation instructions, you do not have to build anything yet.
 If you have trouble with Python, you can try setting up a virtual environment, which the following script does automatically:
 ```bash
