@@ -2,7 +2,7 @@ version: '3.2'
 
 services:
   cache:
-    image: uasatucla/px4-simulator-dev
+    image: uasatucla/px4-simulator-1.10-dev
 
   dev:
     depends_on:
@@ -10,10 +10,10 @@ services:
     build:
       context: .devcontainer
       cache_from:
-        - uasatucla/px4-simulator-dev
+        - uasatucla/px4-simulator-1.10-dev
       args:
         - BUILDKIT_INLINE_CACHE=1
-    image: uasatucla/px4-simulator-dev
+    image: uasatucla/px4-simulator-1.10-dev
     container_name: px4-simulator-dev
     volumes:
       - .:/workspace:cached
@@ -27,4 +27,4 @@ services:
     build:
       context: .
       dockerfile: prod.Dockerfile
-    image: uasatucla/px4-simulator
+    image: uasatucla/px4-simulator-1.10
