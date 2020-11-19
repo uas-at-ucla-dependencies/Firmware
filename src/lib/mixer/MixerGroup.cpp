@@ -41,6 +41,7 @@
 
 #include "HelicopterMixer/HelicopterMixer.hpp"
 #include "MultirotorMixer/MultirotorMixer.hpp"
+#include "MultirotorMixer/aviata_mixer_manager.hpp"
 #include "NullMixer/NullMixer.hpp"
 #include "SimpleMixer/SimpleMixer.hpp"
 
@@ -198,6 +199,8 @@ MixerGroup::load_from_buf(Mixer::ControlCallback control_cb, uintptr_t cb_handle
 
 		case 'R':
 			m = MultirotorMixer::from_text(control_cb, cb_handle, p, resid);
+			aviata_mixer_manager_init((MultirotorMixer*) m);
+			// std::cout << "Initialized multirotor mixer" << std::endl;
 			break;
 
 		case 'H':

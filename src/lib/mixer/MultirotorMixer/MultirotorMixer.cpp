@@ -94,8 +94,11 @@ MultirotorMixer::MultirotorMixer(ControlCallback control_cb, uintptr_t cb_handle
 	Mixer(control_cb, cb_handle),
 	_rotor_count(rotor_count),
 	_rotors(rotors),
+	_aviata_rotor_count(rotor_count),
+	_aviata_rotor_index(0),
 	_outputs_prev(new float[_rotor_count]),
-	_tmp_array(new float[_rotor_count])
+	_tmp_array(new float[_aviata_rotor_count]),
+	_tmp_outputs(new float[_aviata_rotor_count])
 {
 	for (unsigned i = 0; i < _rotor_count; ++i) {
 		_outputs_prev[i] = _idle_speed;
@@ -106,6 +109,19 @@ MultirotorMixer::~MultirotorMixer()
 {
 	delete[] _outputs_prev;
 	delete[] _tmp_array;
+	delete[] _tmp_outputs;
+}
+
+void
+MultirotorMixer::set_rotors(const Rotor* rotors, unsigned aviata_rotor_count) {
+	_rotors = rotors;
+	if (_aviata_rotor_count != aviata_rotor_count) {
+		_aviata_rotor_count = aviata_rotor_count;
+		delete[] _tmp_array;
+		delete[] _tmp_outputs;
+		_tmp_array = new float[_aviata_rotor_count];
+		_tmp_outputs = new float[_aviata_rotor_count];
+	}
 }
 
 MultirotorMixer *
@@ -172,7 +188,7 @@ MultirotorMixer::compute_desaturation_gain(const float *desaturation_vector, con
 	float k_min = 0.f;
 	float k_max = 0.f;
 
-	for (unsigned i = 0; i < _rotor_count; i++) {
+	for (unsigned i = 0; i < _aviata_rotor_count; i++) {
 		// Avoid division by zero. If desaturation_vector[i] is zero, there's nothing we can do to unsaturate anyway
 		if (fabsf(desaturation_vector[i]) < FLT_EPSILON) {
 			continue;
@@ -213,7 +229,7 @@ MultirotorMixer::minimize_saturation(const float *desaturation_vector, float *ou
 		return;
 	}
 
-	for (unsigned i = 0; i < _rotor_count; i++) {
+	for (unsigned i = 0; i < _aviata_rotor_count; i++) {
 		outputs[i] += k1 * desaturation_vector[i];
 	}
 
@@ -222,7 +238,7 @@ MultirotorMixer::minimize_saturation(const float *desaturation_vector, float *ou
 	// In that case adding 0.5 of the gain will equilibrate saturations.
 	float k2 = 0.5f * compute_desaturation_gain(desaturation_vector, outputs, sat_status, min_output, max_output);
 
-	for (unsigned i = 0; i < _rotor_count; i++) {
+	for (unsigned i = 0; i < _aviata_rotor_count; i++) {
 		outputs[i] += k2 * desaturation_vector[i];
 	}
 }
@@ -233,7 +249,7 @@ MultirotorMixer::mix_airmode_rp(float roll, float pitch, float yaw, float thrust
 	// Airmode for roll and pitch, but not yaw
 
 	// Mix without yaw
-	for (unsigned i = 0; i < _rotor_count; i++) {
+	for (unsigned i = 0; i < _aviata_rotor_count; i++) {
 		outputs[i] = roll * _rotors[i].roll_scale +
 			     pitch * _rotors[i].pitch_scale +
 			     thrust * _rotors[i].thrust_scale;
@@ -254,7 +270,7 @@ MultirotorMixer::mix_airmode_rpy(float roll, float pitch, float yaw, float thrus
 	// Airmode for roll, pitch and yaw
 
 	// Do full mixing
-	for (unsigned i = 0; i < _rotor_count; i++) {
+	for (unsigned i = 0; i < _aviata_rotor_count; i++) {
 		outputs[i] = roll * _rotors[i].roll_scale +
 			     pitch * _rotors[i].pitch_scale +
 			     yaw * _rotors[i].yaw_scale +
@@ -268,7 +284,7 @@ MultirotorMixer::mix_airmode_rpy(float roll, float pitch, float yaw, float thrus
 
 	// Unsaturate yaw (in case upper and lower bounds are exceeded)
 	// to prioritize roll/pitch over yaw.
-	for (unsigned i = 0; i < _rotor_count; i++) {
+	for (unsigned i = 0; i < _aviata_rotor_count; i++) {
 		_tmp_array[i] = _rotors[i].yaw_scale;
 	}
 
@@ -281,7 +297,7 @@ MultirotorMixer::mix_airmode_disabled(float roll, float pitch, float yaw, float 
 	// Airmode disabled: never allow to increase the thrust to unsaturate a motor
 
 	// Mix without yaw
-	for (unsigned i = 0; i < _rotor_count; i++) {
+	for (unsigned i = 0; i < _aviata_rotor_count; i++) {
 		outputs[i] = roll * _rotors[i].roll_scale +
 			     pitch * _rotors[i].pitch_scale +
 			     thrust * _rotors[i].thrust_scale;
@@ -294,13 +310,13 @@ MultirotorMixer::mix_airmode_disabled(float roll, float pitch, float yaw, float 
 	minimize_saturation(_tmp_array, outputs, _saturation_status, 0.f, 1.f, true);
 
 	// Reduce roll/pitch acceleration if needed to unsaturate
-	for (unsigned i = 0; i < _rotor_count; i++) {
+	for (unsigned i = 0; i < _aviata_rotor_count; i++) {
 		_tmp_array[i] = _rotors[i].roll_scale;
 	}
 
 	minimize_saturation(_tmp_array, outputs, _saturation_status);
 
-	for (unsigned i = 0; i < _rotor_count; i++) {
+	for (unsigned i = 0; i < _aviata_rotor_count; i++) {
 		_tmp_array[i] = _rotors[i].pitch_scale;
 	}
 
@@ -313,7 +329,7 @@ MultirotorMixer::mix_airmode_disabled(float roll, float pitch, float yaw, float 
 void MultirotorMixer::mix_yaw(float yaw, float *outputs)
 {
 	// Add yaw to outputs
-	for (unsigned i = 0; i < _rotor_count; i++) {
+	for (unsigned i = 0; i < _aviata_rotor_count; i++) {
 		outputs[i] += yaw * _rotors[i].yaw_scale;
 
 		// Yaw will be used to unsaturate if needed
@@ -324,7 +340,7 @@ void MultirotorMixer::mix_yaw(float yaw, float *outputs)
 	// and allow some yaw response at maximum thrust
 	minimize_saturation(_tmp_array, outputs, _saturation_status, 0.f, 1.15f);
 
-	for (unsigned i = 0; i < _rotor_count; i++) {
+	for (unsigned i = 0; i < _aviata_rotor_count; i++) {
 		_tmp_array[i] = _rotors[i].thrust_scale;
 	}
 
@@ -350,17 +366,22 @@ MultirotorMixer::mix(float *outputs, unsigned space)
 	// Do the mixing using the strategy given by the current Airmode configuration
 	switch (_airmode) {
 	case Airmode::roll_pitch:
-		mix_airmode_rp(roll, pitch, yaw, thrust, outputs);
+		mix_airmode_rp(roll, pitch, yaw, thrust, _tmp_outputs);
 		break;
 
 	case Airmode::roll_pitch_yaw:
-		mix_airmode_rpy(roll, pitch, yaw, thrust, outputs);
+		mix_airmode_rpy(roll, pitch, yaw, thrust, _tmp_outputs);
 		break;
 
 	case Airmode::disabled:
 	default: // just in case: default to disabled
-		mix_airmode_disabled(roll, pitch, yaw, thrust, outputs);
+		mix_airmode_disabled(roll, pitch, yaw, thrust, _tmp_outputs);
 		break;
+	}
+
+	// Added for AVIATA - transition from using full rotor config to using only this drone's rotors
+	for (unsigned i = 0; i < _rotor_count; i++) {
+		outputs[i] = _tmp_outputs[i + _aviata_rotor_index];
 	}
 
 	// Apply thrust model and scale outputs to range [idle_speed, 1].
