@@ -1,6 +1,7 @@
 #include "aviata_mixer_manager.hpp"
 #include "aviata_mixers.h"
 #include <iostream>
+#include <algorithm>
 
 static bool initialized = false;
 static bool docked = false;
