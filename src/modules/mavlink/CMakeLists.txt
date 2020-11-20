@@ -31,7 +31,7 @@
 #
 ############################################################################
 
-px4_add_git_submodule(TARGET git_mavlink_v2 PATH "${PX4_SOURCE_DIR}/mavlink/include/mavlink/v2.0")
+# px4_add_git_submodule(TARGET git_mavlink_v2 PATH "${PX4_SOURCE_DIR}/mavlink/include/mavlink/v2.0")
 
 px4_add_module(
 	MODULE modules__mavlink
@@ -68,7 +68,7 @@ px4_add_module(
 		drivers_barometer
 		drivers_gyroscope
 		drivers_magnetometer
-		git_mavlink_v2
+		# git_mavlink_v2
 		conversion
 		git_ecl
 		ecl_geo

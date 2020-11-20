@@ -1233,10 +1233,11 @@ Mavlink::send_protocol_version()
 	msg.version = _protocol_version * 100;
 	msg.min_version = 100;
 	msg.max_version = 200;
-	uint64_t mavlink_lib_git_version_binary = px4_mavlink_lib_version_binary();
+	// uint64_t mavlink_lib_git_version_binary = px4_mavlink_lib_version_binary();
 	// TODO add when available
 	//memcpy(&msg.spec_version_hash, &mavlink_spec_git_version_binary, sizeof(msg.spec_version_hash));
-	memcpy(&msg.library_version_hash, &mavlink_lib_git_version_binary, sizeof(msg.library_version_hash));
+	// memcpy(&msg.library_version_hash, &mavlink_lib_git_version_binary, sizeof(msg.library_version_hash));
+	memset(&msg.library_version_hash, 0, sizeof(msg.library_version_hash));
 
 	// Switch to MAVLink 2
 	int curr_proto_ver = _protocol_version;
