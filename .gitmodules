@@ -1,7 +1,3 @@
-[submodule "mavlink/include/mavlink/v2.0"]
-	path = mavlink/include/mavlink/v2.0
-	url = https://github.com/mavlink/c_library_v2.git
-	branch = master
 [submodule "src/drivers/uavcan/libuavcan"]
 	path = src/drivers/uavcan/libuavcan
 	url = https://github.com/PX4/uavcan.git
