@@ -28,6 +28,10 @@ void aviata_mixer_manager_init(MultirotorMixer* m) {
 		initialized = false;
 	}
 	docked = false;
+
+	// Avoid unused variable warnings
+	(void)_config_aviata_key;
+	(void)_config_aviata_rotor_count;
 }
 
 void aviata_mixer_manager_set_standalone() {
