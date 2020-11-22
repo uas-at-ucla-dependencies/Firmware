@@ -33,6 +33,8 @@ AviataMixerManager::AviataMixerManager(MultirotorMixer* m) :
 	(void)_config_aviata_rotor_count;
 }
 
+AviataMixerManager::~AviataMixerManager() {}
+
 void AviataMixerManager::Run() {
 	bool aviata_finalize_docking_received = _aviata_finalize_docking_sub.update(&_aviata_finalize_docking_cmd);
 	bool aviata_set_configuration_received = _aviata_set_configuration_sub.update(&_aviata_set_configuration_cmd);

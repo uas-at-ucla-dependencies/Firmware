@@ -13,6 +13,7 @@ class AviataMixerManager: public px4::WorkItem
 {
 public:
 	AviataMixerManager(MultirotorMixer* m);
+	~AviataMixerManager() override;
 
 private:
 	static constexpr float STANDALONE_SENS_BOARD_Z_OFF = 0.0f;
