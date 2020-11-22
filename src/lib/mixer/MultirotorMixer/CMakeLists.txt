@@ -87,7 +87,6 @@ add_custom_target(mixer_gen_6dof DEPENDS mixer_multirotor_6dof.generated.h)
 add_library(MultirotorMixer
 	MultirotorMixer.cpp
 	MultirotorMixer.hpp
-	aviata_mixer_manager.cpp
 
 	${CMAKE_CURRENT_BINARY_DIR}/mixer_multirotor.generated.h
 	${CMAKE_CURRENT_BINARY_DIR}/mixer_multirotor_normalized.generated.h

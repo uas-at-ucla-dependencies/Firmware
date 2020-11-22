@@ -102,6 +102,9 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/vehicle_trajectory_bezier.h>
 #include <uORB/topics/vehicle_trajectory_waypoint.h>
+#include <uORB/topics/aviata_finalize_docking.h>
+#include <uORB/topics/aviata_set_configuration.h>
+#include <uORB/topics/aviata_set_standalone.h>
 
 class Mavlink;
 
@@ -260,6 +263,10 @@ private:
 	uORB::Publication<vehicle_rates_setpoint_s>		_rates_sp_pub{ORB_ID(vehicle_rates_setpoint)};
 	uORB::Publication<vehicle_trajectory_bezier_s>	_trajectory_bezier_pub{ORB_ID(vehicle_trajectory_bezier)};
 	uORB::Publication<vehicle_trajectory_waypoint_s>	_trajectory_waypoint_pub{ORB_ID(vehicle_trajectory_waypoint)};
+
+	uORB::Publication<aviata_finalize_docking_s>		_aviata_finalize_docking_pub{ORB_ID(aviata_finalize_docking)};
+	uORB::Publication<aviata_set_configuration_s>		_aviata_set_configuration_pub{ORB_ID(aviata_set_configuration)};
+	uORB::Publication<aviata_set_standalone_s>		_aviata_set_standalone_pub{ORB_ID(aviata_set_standalone)};
 
 	// ORB publications (multi)
 	uORB::PublicationMulti<distance_sensor_s>		_distance_sensor_pub{ORB_ID(distance_sensor), ORB_PRIO_LOW};

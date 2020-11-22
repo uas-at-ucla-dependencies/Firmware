@@ -34,6 +34,7 @@
 #pragma once
 
 #include <mixer/MixerBase/Mixer.hpp>
+#include <mixer_module/AviataMixerManager.hpp>
 
 /**
  * Supported multirotor geometries.
@@ -265,4 +266,6 @@ private:
 	float 				*_outputs_prev{nullptr};
 	float 				*_tmp_array{nullptr};
 	float 				*_tmp_outputs{nullptr};
+
+	AviataMixerManager		_aviata_mixer_manager{this};
 };

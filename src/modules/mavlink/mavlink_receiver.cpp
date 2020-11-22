@@ -472,6 +472,49 @@ void MavlinkReceiver::handle_message_command_both(mavlink_message_t *msg, const 
 
 		_actuator_controls_pubs[actuator_controls_s::GROUP_INDEX_GIMBAL].publish(actuator_controls);
 
+	} else if (cmd_mavlink.command == MAV_CMD_AVIATA_FINALIZE_DOCKING) {
+		aviata_finalize_docking_s aviata_finalize_docking_cmd;
+		aviata_finalize_docking_cmd.timestamp = hrt_absolute_time();
+		aviata_finalize_docking_cmd.docking_slot = (uint8_t) (vehicle_command.param1+0.5f);
+		float missing_drones_float[6];
+		missing_drones_float[0] = vehicle_command.param2;
+		missing_drones_float[1] = vehicle_command.param3;
+		missing_drones_float[2] = vehicle_command.param4;
+		missing_drones_float[3] = vehicle_command.param5;
+		missing_drones_float[4] = vehicle_command.param6;
+		missing_drones_float[5] = vehicle_command.param7;
+		aviata_finalize_docking_cmd.n_missing = 0;
+		for (uint8_t i = 0; i < 6; i++) {
+			if (isnan(missing_drones_float[i])) {
+				break;
+			}
+			aviata_finalize_docking_cmd.missing_drones[i] = (uint8_t) (missing_drones_float[i]+0.5f);
+			aviata_finalize_docking_cmd.n_missing++;
+		}
+		_aviata_finalize_docking_pub.publish(aviata_finalize_docking_cmd);
+	} else if (cmd_mavlink.command == MAV_CMD_AVIATA_SET_CONFIGURATION) {
+		aviata_set_configuration_s aviata_set_configuration_cmd;
+		aviata_set_configuration_cmd.timestamp = hrt_absolute_time();
+		float missing_drones_float[6];
+		missing_drones_float[0] = vehicle_command.param2;
+		missing_drones_float[1] = vehicle_command.param3;
+		missing_drones_float[2] = vehicle_command.param4;
+		missing_drones_float[3] = vehicle_command.param5;
+		missing_drones_float[4] = vehicle_command.param6;
+		missing_drones_float[5] = vehicle_command.param7;
+		aviata_set_configuration_cmd.n_missing = 0;
+		for (uint8_t i = 0; i < 6; i++) {
+			if (isnan(missing_drones_float[i])) {
+				break;
+			}
+			aviata_set_configuration_cmd.missing_drones[i] = (uint8_t) (missing_drones_float[i]+0.5f);
+			aviata_set_configuration_cmd.n_missing++;
+		}
+		_aviata_set_configuration_pub.publish(aviata_set_configuration_cmd);
+	} else if (cmd_mavlink.command == MAV_CMD_AVIATA_SET_STANDALONE) {
+		aviata_set_standalone_s aviata_set_standalone_cmd;
+		aviata_set_standalone_cmd.timestamp = hrt_absolute_time();
+		_aviata_set_standalone_pub.publish(aviata_set_standalone_cmd);
 	} else {
 
 		send_ack = false;

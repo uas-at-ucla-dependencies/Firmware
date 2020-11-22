@@ -41,6 +41,9 @@ set(msg_files
 	adc_report.msg
 	airspeed.msg
 	airspeed_validated.msg
+	aviata_finalize_docking.msg
+	aviata_set_configuration.msg
+	aviata_set_standalone.msg
 	battery_status.msg
 	camera_capture.msg
 	camera_trigger.msg
