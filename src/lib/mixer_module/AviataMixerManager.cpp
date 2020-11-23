@@ -4,7 +4,10 @@
 #include <px4_platform_common/defines.h>
 #include <algorithm>
 
-constexpr float AviataMixerManager::STANDALONE_SENS_BOARD_Z_OFF; // This doesn't make any sense but is required for some reason.
+// This doesn't make any sense but is required for some reason.
+constexpr float AviataMixerManager::STANDALONE_SENS_BOARD_Z_OFF;
+constexpr AviataMixerManager::DualParamByName AviataMixerManager::DUAL_PARAMS_BY_NAME[];
+constexpr size_t AviataMixerManager::DUAL_PARAMS_LEN;
 
 AviataMixerManager::AviataMixerManager(MultirotorMixer* m) :
 	WorkItem(MODULE_NAME, px4::wq_configurations::lp_default),
