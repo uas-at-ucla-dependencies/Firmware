@@ -9,8 +9,6 @@
 
 ################################################################################
 
-# random change to test pushing
-
 cd "$(dirname "$0")";
 
 # Exit if any errors are encountered.
