@@ -1,11 +1,13 @@
 #include "AviataMixerManager.hpp"
-#include <lib/mixer/MultirotorMixer/MultirotorMixer.hpp>
 #include "aviata_mixers.h"
 #include <px4_platform_common/defines.h>
-#include <algorithm>
+#include <stdlib.h>
+int cmpfunc (const void * a, const void * b) {
+   return ( *(int*)a - *(int*)b );
+}
 
 // This doesn't make any sense but is required for some reason.
-constexpr float AviataMixerManager::STANDALONE_SENS_BOARD_Z_OFF;
+// constexpr float AviataMixerManager::STANDALONE_SENS_BOARD_Z_OFF;
 constexpr AviataMixerManager::DualParamByName AviataMixerManager::DUAL_PARAMS_BY_NAME[];
 constexpr size_t AviataMixerManager::DUAL_PARAMS_LEN;
 
@@ -64,16 +66,19 @@ void AviataMixerManager::finalize_docking(uint8_t docking_slot, uint8_t* missing
 		_docking_slot = docking_slot;
 		PX4_INFO("AVIATA DOCKED IN SLOT %u", docking_slot);
 
-		float fc_yaw_rotation = STANDALONE_SENS_BOARD_Z_OFF - _config_aviata_drone_angle[docking_slot]; // Subtract due to opposite CW/CCW conventions
-		param_set_no_notification(_handle_SENS_BOARD_Z_OFF, &fc_yaw_rotation);
+		// float fc_yaw_rotation = STANDALONE_SENS_BOARD_Z_OFF - _config_aviata_drone_angle[docking_slot]; // Subtract due to opposite CW/CCW conventions
+		// param_set_no_notification(_handle_SENS_BOARD_Z_OFF, &fc_yaw_rotation);
 
+		// TODO Test without param setting
+		/*
 		for (size_t i = 0; i < DUAL_PARAMS_LEN; i++) {
 			param_set_no_notification(_dual_params[i].param, &_dual_params[i].aviata_val);
 		}
 		param_notify_changes();
+		*/
 
 		set_configuration(missing_drones, n_missing);
-		_mixer->set_aviata_rotor_index(AVIATA_NUM_ROTORS * docking_slot); // AVIATA TODO Might need to consider thread safety for set_aviata_rotor_index() and set_rotors()
+		_mixer->set_aviata_rotor_index(AVIATA_NUM_ROTORS * docking_slot); // TODO set angle offset in _mixer
 	} else {
 		// AVIATA TODO print warning?
 	}
@@ -81,7 +86,7 @@ void AviataMixerManager::finalize_docking(uint8_t docking_slot, uint8_t* missing
 
 void AviataMixerManager::set_configuration(uint8_t* missing_drones, uint8_t n_missing) {
 	if (_docked && validate_configuration(_docking_slot, missing_drones, n_missing)) {
-		std::sort(missing_drones, missing_drones + n_missing);
+		qsort(missing_drones, n_missing, sizeof(uint8_t), cmpfunc);
 
 		// Calculate index of aviata configuration, based on the predictable order in which combinations are generated.
 		MultirotorGeometryUnderlyingType mixer_index = 0;
@@ -104,8 +109,8 @@ void AviataMixerManager::set_configuration(uint8_t* missing_drones, uint8_t n_mi
 void AviataMixerManager::set_standalone() {
 	if (_docked) {
 		set_standalone_params();
-		_mixer->set_aviata_rotor_index(0);
-		_mixer->set_rotors((const MultirotorMixer::Rotor*) _standalone_rotors, AVIATA_NUM_ROTORS);
+		_mixer->set_aviata_rotor_index(0); // TODO set angle offset in _mixer
+		_mixer->set_rotors(_standalone_rotors, AVIATA_NUM_ROTORS);
 		_docked = false;
 		PX4_INFO("AVIATA UNDOCKED");
 	} else {
@@ -114,12 +119,15 @@ void AviataMixerManager::set_standalone() {
 }
 
 void AviataMixerManager::set_standalone_params() {
-	param_set_no_notification(_handle_SENS_BOARD_Z_OFF, &STANDALONE_SENS_BOARD_Z_OFF);
+	// param_set_no_notification(_handle_SENS_BOARD_Z_OFF, &STANDALONE_SENS_BOARD_Z_OFF);
 
+	// TODO Test without param setting
+	/*
 	for (size_t i = 0; i < DUAL_PARAMS_LEN; i++) {
 		param_set_no_notification(_dual_params[i].param, &_dual_params[i].standalone_val);
 	}
 	param_notify_changes();
+	*/
 }
 
 bool AviataMixerManager::validate_configuration(uint8_t docking_slot, uint8_t* missing_drones, uint8_t n_missing) {

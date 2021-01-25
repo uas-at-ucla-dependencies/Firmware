@@ -1054,7 +1054,7 @@ MK::pwm_ioctl(file *filp, int cmd, unsigned long arg)
 
 			} else {
 
-				ret = _mixers->load_from_buf(control_callback, (uintptr_t)&_controls, buf, buflen);
+				ret = _mixers->load_from_buf(control_callback, (uintptr_t)&_controls, buf, buflen, nullptr);
 
 				if (ret != 0) {
 					DEVICE_DEBUG("mixer load failed with %d", ret);

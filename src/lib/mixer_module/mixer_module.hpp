@@ -51,6 +51,7 @@
 #include <uORB/topics/multirotor_motor_limits.h>
 #include <uORB/topics/parameter_update.h>
 #include <uORB/topics/test_motor.h>
+#include "AviataMixerManager.hpp"
 
 /**
  * @class OutputModuleInterface
@@ -260,6 +261,8 @@ private:
 	bool _wq_switched{false};
 	uint8_t _driver_instance{0}; ///< for boards that supports multiple outputs (e.g. PX4IO + FMU)
 	const uint8_t _max_num_outputs;
+
+	AviataMixerManager* _aviata_mixer_manager{nullptr};
 
 	struct MotorTest {
 		uORB::Subscription test_motor_sub{ORB_ID(test_motor)};

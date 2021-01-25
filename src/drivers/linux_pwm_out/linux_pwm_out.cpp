@@ -160,7 +160,7 @@ int initialize_mixer(const char *mixer_filename)
 	// PX4_INFO("Trying to initialize mixer from config file %s", mixer_filename);
 
 	if (load_mixer_file(mixer_filename, buf, buflen) == 0) {
-		if (_mixer_group->load_from_buf(mixer_control_callback, (uintptr_t) &_controls, buf, buflen) == 0) {
+		if (_mixer_group->load_from_buf(mixer_control_callback, (uintptr_t) &_controls, buf, buflen, nullptr) == 0) {
 			PX4_INFO("Loaded mixer from file %s", mixer_filename);
 			return 0;
 

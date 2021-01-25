@@ -256,7 +256,7 @@ bool MixerTest::load_mixer(const char *filename, const char *buf, unsigned loade
 	/* load at once test */
 	unsigned xx = loaded;
 	mixer_group.reset();
-	mixer_group.load_from_buf(mixer_callback, 0, &buf[0], xx);
+	mixer_group.load_from_buf(mixer_callback, 0, &buf[0], xx, nullptr);
 
 	if (expected_count > 0) {
 		ut_compare("check number of mixers loaded", mixer_group.count(), expected_count);
@@ -267,7 +267,7 @@ bool MixerTest::load_mixer(const char *filename, const char *buf, unsigned loade
 	empty_buf[0] = ' ';
 	empty_buf[1] = '\0';
 	mixer_group.reset();
-	mixer_group.load_from_buf(mixer_callback, 0, &empty_buf[0], empty_load);
+	mixer_group.load_from_buf(mixer_callback, 0, &empty_buf[0], empty_load, nullptr);
 
 	if (verbose) {
 		PX4_INFO("empty buffer load: loaded %u mixers, used: %u", mixer_group.count(), empty_load);
@@ -302,7 +302,7 @@ bool MixerTest::load_mixer(const char *filename, const char *buf, unsigned loade
 
 		/* process the text buffer, adding new mixers as their descriptions can be parsed */
 		resid = mixer_text_length;
-		mixer_group.load_from_buf(mixer_callback, 0, &mixer_text[0], resid);
+		mixer_group.load_from_buf(mixer_callback, 0, &mixer_text[0], resid, nullptr);
 
 		/* if anything was parsed */
 		if (resid != mixer_text_length) {

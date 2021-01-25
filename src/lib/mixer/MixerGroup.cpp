@@ -40,7 +40,6 @@
 #include "MixerGroup.hpp"
 
 #include "HelicopterMixer/HelicopterMixer.hpp"
-#include "MultirotorMixer/MultirotorMixer.hpp"
 #include "NullMixer/NullMixer.hpp"
 #include "SimpleMixer/SimpleMixer.hpp"
 
@@ -170,10 +169,14 @@ MixerGroup::groups_required(uint32_t &groups)
 }
 
 int
-MixerGroup::load_from_buf(Mixer::ControlCallback control_cb, uintptr_t cb_handle, const char *buf, unsigned &buflen)
+MixerGroup::load_from_buf(Mixer::ControlCallback control_cb, uintptr_t cb_handle, const char *buf, unsigned &buflen, MultirotorMixer** multirotor_mixer_ptr)
 {
 	int ret = -1;
 	const char *end = buf + buflen;
+
+	if (multirotor_mixer_ptr != nullptr) {
+		*multirotor_mixer_ptr = nullptr;
+	}
 
 	/*
 	 * Loop until either we have emptied the buffer, or we have failed to
@@ -198,6 +201,9 @@ MixerGroup::load_from_buf(Mixer::ControlCallback control_cb, uintptr_t cb_handle
 
 		case 'R':
 			m = MultirotorMixer::from_text(control_cb, cb_handle, p, resid);
+			if (multirotor_mixer_ptr != nullptr) {
+				*multirotor_mixer_ptr = (MultirotorMixer*) m;
+			}
 			break;
 
 		case 'H':

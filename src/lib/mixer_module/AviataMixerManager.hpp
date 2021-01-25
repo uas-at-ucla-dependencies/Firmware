@@ -1,13 +1,11 @@
 #pragma once
 
-#include <parameters/param.h>
+#include <px4_platform_common/module_params.h>
 #include <uORB/SubscriptionCallback.hpp>
 #include <uORB/topics/aviata_finalize_docking.h>
 #include <uORB/topics/aviata_set_configuration.h>
 #include <uORB/topics/aviata_set_standalone.h>
-
-// Forward declaration
-class MultirotorMixer;
+#include <lib/mixer/MultirotorMixer/MultirotorMixer.hpp>
 
 class AviataMixerManager: public px4::WorkItem
 {
@@ -16,8 +14,8 @@ public:
 	~AviataMixerManager() override;
 
 private:
-	static constexpr float STANDALONE_SENS_BOARD_Z_OFF = 0.0f;
-	const param_t _handle_SENS_BOARD_Z_OFF = param_find("SENS_BOARD_Z_OFF");
+	// static constexpr float STANDALONE_SENS_BOARD_Z_OFF = 0.0f;
+	// const param_t _handle_SENS_BOARD_Z_OFF = param_find("SENS_BOARD_Z_OFF");
 
 	struct DualParamByName {
 		const char* param_name;
@@ -100,7 +98,7 @@ private:
 	aviata_set_standalone_s _aviata_set_standalone_cmd;
 
 	MultirotorMixer* const _mixer;
-	const void* const _standalone_rotors;
+	const MultirotorMixer::Rotor* const _standalone_rotors;
 	bool _docked;
 	uint8_t _docking_slot;
 

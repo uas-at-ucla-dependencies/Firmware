@@ -540,7 +540,7 @@ mixer_handle_text_create_mixer()
 
 	/* process the text buffer, adding new mixers as their descriptions can be parsed */
 	unsigned resid = mixer_text_length;
-	mixer_group.load_from_buf(mixer_callback, 0, &mixer_text[0], resid);
+	mixer_group.load_from_buf(mixer_callback, 0, &mixer_text[0], resid, nullptr);
 
 	/* if anything was parsed */
 	if (resid != mixer_text_length) {

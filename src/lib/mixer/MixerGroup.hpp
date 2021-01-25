@@ -34,6 +34,7 @@
 #pragma once
 
 #include "MixerBase/Mixer.hpp"
+#include "MultirotorMixer/MultirotorMixer.hpp"
 
 /**
  * Group of mixers, built up from single mixers and processed
@@ -133,7 +134,7 @@ public:
 	 *				bytes as they are consumed.
 	 * @return			Zero on successful load, nonzero otherwise.
 	 */
-	int				load_from_buf(Mixer::ControlCallback control_cb, uintptr_t cb_handle, const char *buf, unsigned &buflen);
+	int				load_from_buf(Mixer::ControlCallback control_cb, uintptr_t cb_handle, const char *buf, unsigned &buflen, MultirotorMixer** multirotor_mixer_ptr);
 
 	/**
 	 * @brief      Update slew rate parameter. This tells instances of the class MultirotorMixer

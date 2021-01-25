@@ -682,7 +682,7 @@ int TAP_ESC::ioctl(cdev::file_t *filp, int cmd, unsigned long arg)
 				ret = -ENOMEM;
 
 			} else {
-				ret = _mixers->load_from_buf(control_callback_trampoline, (uintptr_t)this, buf, buflen);
+				ret = _mixers->load_from_buf(control_callback_trampoline, (uintptr_t)this, buf, buflen, nullptr);
 
 				if (ret != 0) {
 					PX4_DEBUG("mixer load failed with %d", ret);
