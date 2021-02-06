@@ -25,7 +25,7 @@ class XMLOutput():
         xml_version = ET.SubElement(xml_parameters, "parameter_version_major")
         xml_version.text = "1"
         xml_version = ET.SubElement(xml_parameters, "parameter_version_minor")
-        xml_version.text = "15"
+        xml_version.text = "16" # AVIATA TODO - increase this when changing PX4 parameter definitions
         last_param_name = ""
         board_specific_param_set = False
         for group in groups:
@@ -58,7 +58,7 @@ class XMLOutput():
                             xml_field.text = value
                 if last_param_name != param.GetName():
                     board_specific_param_set = False
-                
+
                 if len(param.GetEnumCodes()) > 0:
                     xml_values = ET.SubElement(xml_param, "values")
                     for code in param.GetEnumCodes():

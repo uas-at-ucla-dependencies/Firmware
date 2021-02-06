@@ -223,7 +223,9 @@ PARAM_DEFINE_FLOAT(MPC_XY_P, 0.95f);
  *
  * defined as correction acceleration in m/s^2 per m/s velocity error
  *
- * @min 1.2
+ * AVIATA changes: min was 1.2
+ *
+ * @min 0.1
  * @max 3.0
  * @decimal 2
  * @group Multicopter Position Control
@@ -248,7 +250,9 @@ PARAM_DEFINE_FLOAT(MPC_XY_VEL_I_ACC, 0.4f);
  *
  * defined as correction acceleration in m/s^2 per m/s^2 velocity derivative
  *
- * @min 0.1
+ * AVIATA changes: min was 0.1
+ *
+ * @min 0.01
  * @max 2.0
  * @decimal 3
  * @group Multicopter Position Control
