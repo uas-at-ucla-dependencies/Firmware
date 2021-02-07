@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# @name Generic Hexarotor x geometry, FMU
+#
+# @type Hexarotor x
+# @class Copter
+#
+# @output AUX1 motor 1
+# @output AUX2 motor 2
+# @output AUX3 motor 3
+# @output AUX4 motor 4
+# @output AUX5 motor 5
+# @output AUX6 motor 6
+#
+# @maintainer UAS@UCLA
+#
+# @board intel_aerofc-v1 exclude
+# @board bitcraze_crazyflie exclude
+#
+
+set VEHICLE_TYPE mc
+
+if [ $AUTOCNF = yes ]
+then
+	param set NAV_ACC_RAD 2
+
+	param set RTL_RETURN_ALT 30
+	param set RTL_DESCEND_ALT 10
+	param set RTL_LAND_DELAY 0
+
+	param set PWM_AUX_MAX 2000
+	param set PWM_AUX_MIN 1100
+	param set PWM_AUX_DISARMED 900
+	param set PWM_AUX_RATE 400
+
+	param set GPS_UBX_DYNMODEL 6
+fi
+
+set MIXER_AUX hexa_x
+
+set PWM_AUX_OUT 123456

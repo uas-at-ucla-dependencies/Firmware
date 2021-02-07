@@ -1,6 +1,8 @@
 #include "AviataMixerManager.hpp"
 #include "aviata_mixers.h"
 #include <px4_platform_common/defines.h>
+#include <systemlib/mavlink_log.h>
+#include <uORB/topics/mavlink_log.h>
 #include <stdlib.h>
 int cmpfunc (const void * a, const void * b) {
    return ( *(int*)a - *(int*)b );
@@ -11,34 +13,41 @@ int cmpfunc (const void * a, const void * b) {
 constexpr AviataMixerManager::DualParamByName AviataMixerManager::DUAL_PARAMS_BY_NAME[];
 constexpr size_t AviataMixerManager::DUAL_PARAMS_LEN;
 
-AviataMixerManager::AviataMixerManager(MultirotorMixer* m) :
-	WorkItem(MODULE_NAME, px4::wq_configurations::lp_default),
-	_mixer(m),
-	_standalone_rotors(m->get_rotors()),
-	_docked(false)
+AviataMixerManager::AviataMixerManager() : WorkItem(MODULE_NAME, px4::wq_configurations::lp_default)
 {
-	if (m->get_multirotor_count() != AVIATA_NUM_ROTORS) {
-		return; // Incompatible rotor count, so do nothing
-	}
-
 	for (size_t i = 0; i < DUAL_PARAMS_LEN; i++) {
 		_dual_params[i].param = param_find(DUAL_PARAMS_BY_NAME[i].param_name);
 		_dual_params[i].standalone_val = DUAL_PARAMS_BY_NAME[i].standalone_val;
 		_dual_params[i].aviata_val = DUAL_PARAMS_BY_NAME[i].aviata_val;
 	}
 
-	set_standalone_params();
-
-	_aviata_finalize_docking_sub.registerCallback();
-	_aviata_set_configuration_sub.registerCallback();
-	_aviata_set_standalone_sub.registerCallback();
-
 	// Avoid unused variable warnings
 	(void)_config_aviata_key;
 	(void)_config_aviata_rotor_count;
 }
 
-AviataMixerManager::~AviataMixerManager() {}
+void AviataMixerManager::init(MultirotorMixer* m) {
+	_aviata_finalize_docking_sub.unregisterCallback();
+	_aviata_set_configuration_sub.unregisterCallback();
+	_aviata_set_standalone_sub.unregisterCallback();
+
+	if (m == nullptr || m->get_multirotor_count() != AVIATA_NUM_ROTORS) {
+		return; // Incompatible rotor count, so do nothing
+	}
+
+	_mixer = m;
+	_standalone_rotors = m->get_rotors();
+	_docked = false;
+
+	mavlink_log_info(&_mavlink_log_pub, "AVIATA: Initializing AviataMixerManager");
+	PX4_INFO("AVIATA: Initializing AviataMixerManager");
+
+	set_standalone_params();
+
+	_aviata_finalize_docking_sub.registerCallback();
+	_aviata_set_configuration_sub.registerCallback();
+	_aviata_set_standalone_sub.registerCallback();
+}
 
 void AviataMixerManager::Run() {
 	bool aviata_finalize_docking_received = _aviata_finalize_docking_sub.update(&_aviata_finalize_docking_cmd);
@@ -64,6 +73,7 @@ void AviataMixerManager::finalize_docking(uint8_t docking_slot, uint8_t* missing
 	if (!_docked && validate_configuration(docking_slot, missing_drones, n_missing)) {
 		_docked = true;
 		_docking_slot = docking_slot;
+		mavlink_log_info(&_mavlink_log_pub, "AVIATA DOCKED IN SLOT %u", docking_slot);
 		PX4_INFO("AVIATA DOCKED IN SLOT %u", docking_slot);
 
 		// float fc_yaw_rotation = STANDALONE_SENS_BOARD_Z_OFF - _config_aviata_drone_angle[docking_slot]; // Subtract due to opposite CW/CCW conventions
@@ -100,6 +110,7 @@ void AviataMixerManager::set_configuration(uint8_t* missing_drones, uint8_t n_mi
 		}
 
 		_mixer->set_rotors(_config_aviata_index[mixer_index], AVIATA_NUM_DRONES * AVIATA_NUM_ROTORS);
+		mavlink_log_info(&_mavlink_log_pub, "SELECTED AVIATA MIXER: %s", _config_aviata_key[mixer_index]);
 		PX4_INFO("SELECTED AVIATA MIXER: %s", _config_aviata_key[mixer_index]);
 	} else {
 		// AVIATA TODO print warning?
@@ -112,6 +123,7 @@ void AviataMixerManager::set_standalone() {
 		_mixer->set_aviata_rotor_index(0); // TODO set angle offset in _mixer
 		_mixer->set_rotors(_standalone_rotors, AVIATA_NUM_ROTORS);
 		_docked = false;
+		mavlink_log_info(&_mavlink_log_pub, "AVIATA UNDOCKED");
 		PX4_INFO("AVIATA UNDOCKED");
 	} else {
 		// AVIATA TODO print warning?

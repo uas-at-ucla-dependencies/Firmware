@@ -52,7 +52,7 @@ then
 		then
 			set MAV_TYPE 3
 		fi
-		if [ $MIXER = hexa_x -o $MIXER = hexa_+ ]
+		if [ $MIXER = hexa_x -o $MIXER = hexa_+ -o $MIXER_AUX = hexa_x ]
 		then
 			set MAV_TYPE 13
 		fi

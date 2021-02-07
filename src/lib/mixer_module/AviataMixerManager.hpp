@@ -10,8 +10,8 @@
 class AviataMixerManager: public px4::WorkItem
 {
 public:
-	AviataMixerManager(MultirotorMixer* m);
-	~AviataMixerManager() override;
+	AviataMixerManager();
+	void init(MultirotorMixer* m);
 
 private:
 	// static constexpr float STANDALONE_SENS_BOARD_Z_OFF = 0.0f;
@@ -92,13 +92,14 @@ private:
 	uORB::SubscriptionCallbackWorkItem _aviata_finalize_docking_sub{this, ORB_ID(aviata_finalize_docking)};
 	uORB::SubscriptionCallbackWorkItem _aviata_set_configuration_sub{this, ORB_ID(aviata_set_configuration)};
 	uORB::SubscriptionCallbackWorkItem _aviata_set_standalone_sub{this, ORB_ID(aviata_set_standalone)};
+	orb_advert_t _mavlink_log_pub{nullptr};
 
 	aviata_finalize_docking_s _aviata_finalize_docking_cmd;
 	aviata_set_configuration_s _aviata_set_configuration_cmd;
 	aviata_set_standalone_s _aviata_set_standalone_cmd;
 
-	MultirotorMixer* const _mixer;
-	const MultirotorMixer::Rotor* const _standalone_rotors;
+	MultirotorMixer* _mixer;
+	const MultirotorMixer::Rotor* _standalone_rotors;
 	bool _docked;
 	uint8_t _docking_slot;
 

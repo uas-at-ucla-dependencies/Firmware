@@ -80,7 +80,7 @@ _control_latency_perf(perf_alloc(PC_ELAPSED, "control latency"))
 MixingOutput::~MixingOutput()
 {
 	perf_free(_control_latency_perf);
-	delete _aviata_mixer_manager;
+	_aviata_mixer_manager.init(nullptr);
 	delete _mixers;
 	px4_sem_destroy(&_lock);
 }
@@ -551,6 +551,7 @@ int MixingOutput::controlCallback(uintptr_t handle, uint8_t control_group, uint8
 void MixingOutput::resetMixer()
 {
 	if (_mixers != nullptr) {
+		_aviata_mixer_manager.init(nullptr);
 		delete _mixers;
 		_mixers = nullptr;
 		_groups_required = 0;
@@ -572,13 +573,11 @@ int MixingOutput::loadMixer(const char *buf, unsigned len)
 
 	MultirotorMixer* multirotor_mixer_ptr;
 	int ret = _mixers->load_from_buf(controlCallback, (uintptr_t)this, buf, len, &multirotor_mixer_ptr);
-	if (multirotor_mixer_ptr != nullptr) {
-		delete _aviata_mixer_manager;
-		_aviata_mixer_manager = new AviataMixerManager(multirotor_mixer_ptr);
-	}
+	_aviata_mixer_manager.init(multirotor_mixer_ptr);
 
 	if (ret != 0) {
 		PX4_ERR("mixer load failed with %d", ret);
+		_aviata_mixer_manager.init(nullptr);
 		delete _mixers;
 		_mixers = nullptr;
 		_groups_required = 0;
