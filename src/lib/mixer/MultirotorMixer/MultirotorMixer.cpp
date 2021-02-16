@@ -355,10 +355,12 @@ MultirotorMixer::mix(float *outputs, unsigned space)
 		return 0;
 	}
 
-	float roll    = math::constrain(get_control(0, 0) * _roll_scale, -1.0f, 1.0f);
-	float pitch   = math::constrain(get_control(0, 1) * _pitch_scale, -1.0f, 1.0f);
-	float yaw     = math::constrain(get_control(0, 2) * _yaw_scale, -1.0f, 1.0f);
-	float thrust  = math::constrain(get_control(0, 3), 0.0f, 1.0f);
+	// AVIATA modification: removed constraints on these values
+	float roll    = get_control(0, 0) * _roll_scale;
+	float pitch   = get_control(0, 1) * _pitch_scale;
+	float yaw     = get_control(0, 2) * _yaw_scale;
+	float thrust  = get_control(0, 3);
+
 
 	// clean out class variable used to capture saturation
 	_saturation_status.value = 0;
